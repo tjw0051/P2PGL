@@ -8,7 +8,7 @@ import kademlia.node.KademliaId;
  * Created by t_j_w on 03/03/2016.
  */
 public class Data implements KadContent {
-    public static final transient String TYPE = "MessageContent";
+    private String type = "Data";
     private KademliaId key;
     private final long createdTimestamp;
     private long lastUpdatedTimestamp;
@@ -19,10 +19,11 @@ public class Data implements KadContent {
         this.createdTimestamp = this.lastUpdatedTimestamp = System.currentTimeMillis() / 1000L;
     }
 
-    public Data(String ownerId, KademliaId key, String data) {
+    public Data(String ownerId, KademliaId key, String data, String type) {
         this.createdTimestamp = this.lastUpdatedTimestamp = System.currentTimeMillis() / 1000L;
         this.key = key;
         this.data = data;
+        this.type = type;
     }
 
     public void setData(String data) { this.data = data; }
@@ -36,7 +37,7 @@ public class Data implements KadContent {
 
     @Override
     public String getType() {
-        return TYPE;
+        return type;
     }
 
     @Override
