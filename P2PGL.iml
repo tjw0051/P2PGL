@@ -28,5 +28,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="jackson-core-2.7.2" level="project" />
+    <orderEntry type="library" name="jackson-databind-2.7.2" level="project" />
   </component>
 </module>

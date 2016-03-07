@@ -134,11 +134,11 @@ public class ConnectionTest {
             KademliaId profKey = connection.StoreProfile();
             Thread.sleep(200);
             Profile prof = (Profile) connection.GetProfile(connection.GetId());
-            assertTrue(1 == 1);
+            Profile localProfile = (Profile) connection.GetLocalProfile();
+            assertTrue(prof.GetKey().toString().equals(localProfile.GetKey().toString()));
         } catch (Exception e) {
             fail();
         }
-
     }
 
     @org.junit.Test

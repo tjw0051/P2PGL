@@ -1,6 +1,7 @@
 package P2PGL;
 
 import com.google.gson.Gson;
+import com.sun.istack.internal.Nullable;
 import kademlia.JKademliaNode;
 import kademlia.dht.GetParameter;
 import kademlia.dht.KademliaStorageEntry;
@@ -16,7 +17,8 @@ import java.util.List;
 
 
 /**
- * Created by Tom.
+ * Main Class of P2PGL.
+ * @author Thomas Walker
  */
 public class Connection {
     private IProfile profile;
@@ -24,11 +26,22 @@ public class Connection {
     private ListenThread listenThread;
     private Gson gson;
 
-    public Connection(IProfile profile) {
+    /**
+     * Instantiate a new connection to a network.
+     * @param profile   Connection parameters for peer (e.g. port, IP Address, key)
+     */
+    public Connection(Profile profile) {
         this.profile = profile;
         gson = new Gson();
     }
 
+    /**
+     * Connect to node.
+     * @param serverName    Name of server.
+     * @param destIPAddress IP Address of server.
+     * @param destPort      Port number of server.
+     * @throws IOException  Error connecting to server.
+     */
     public void Connect(String serverName, InetAddress destIPAddress, int destPort) throws IOException {
         try {
             node = new JKademliaNode(profile.GetKey(), new KademliaId(), profile.GetPort());
@@ -39,6 +52,12 @@ public class Connection {
         }
     }
 
+    /**
+     * Generates a KademliaId key with the last byte incremented by 1
+     * @see Connection#StoreProfile()
+     * @param kadId ID to be incremented
+     * @return  Incremented ID.
+     */
     public static KademliaId IncrementKey(KademliaId kadId) {
         byte[] bytes = Arrays.copyOf(kadId.getBytes(), kadId.getBytes().length);
         bytes[bytes.length - 1]++;
@@ -54,10 +73,24 @@ public class Connection {
         }
     }
 
+    /**
+     * Get a global data object from the DHT.
+     * @param id    Key of data.
+     * @return      data String value.
+     * @throws IOException  Thrown when a get operation cannot be performed (check connection).
+     */
+    @Nullable
     public String Get(String id) throws IOException {
         return Get(new KademliaId(id));
     }
 
+    /**
+     * Get a global data object from the DHT.
+     * @param key    Key of data.
+     * @return      data String value.
+     * @throws IOException  Thrown when a get operation cannot be performed (check connection).
+     */
+    @Nullable
     public String Get(KademliaId key) throws IOException {
         GetParameter getParameter = new GetParameter(key, "String");
         try {
@@ -69,15 +102,33 @@ public class Connection {
         }
     }
 
+    /**
+     * Store string data at destination key on DHT.
+     * @param destKey       key to store data at.
+     * @param stringData    String data to store.
+     * @throws IOException  Thrown when a put operation cannot be performed (check connection).
+     */
     public void Store(KademliaId destKey, String stringData) throws IOException{
         Data data = new Data(node.getNode().getNodeId().toString(), destKey, stringData, "String");
         Store(data);
     }
 
+    /**
+     * Store string data at destination key on DHT.
+     * @param destKey       key to store data at.
+     * @param stringData    String data to store.
+     * @throws IOException  Thrown when a put operation cannot be performed (check connection).
+     */
     public void Store(String destKey, String stringData) throws IOException{
         Data data = new Data(node.getNode().getNodeId().toString(), new KademliaId(destKey), stringData, "String");
         Store(data);
     }
+
+    /**
+     * Store string data at destination key on DHT.
+     * @param data      Data to be stored.
+     * @throws IOException  Thrown when a put operation cannot be performed (check connection).
+     */
     public void Store(Data data) throws IOException{
         try {
             node.put(data);
@@ -86,15 +137,18 @@ public class Connection {
         }
     }
 
+    /**
+     * Store user profile on DHT. Destination key of profile is
+     * this nodeId with last byte incremented by 1.
+     * @see Connection#IncrementKey(KademliaId)
+     * @return  Key profile is stored at.
+     * @throws IOException
+     */
     public KademliaId StoreProfile() throws IOException {
         KademliaId profileKey = IncrementKey(GetId());
-        String jsonProfile = gson.toJson(profile);
+        String jsonProfile = gson.toJson(profile, profile.GetType());
         Store(profileKey, jsonProfile);
         return profileKey;
-    }
-
-    public String ReadMessageStream() {
-        return "";
     }
 
     //TODO: return list
@@ -119,16 +173,27 @@ public class Connection {
         return node.getNode().getNodeId();
     }
 
+    /**
+     * @return Profile of this node.
+     */
     public IProfile GetLocalProfile() {
         return profile;
     }
 
+    /**
+     * Retrieve the profile of user with KademliaId userKey.
+     * @see Connection#StoreProfile()
+     * @param userKey   KademliaId of user
+     * @return  Profile of user. Returns null if profile cannot be found.
+     * @throws IOException  Thrown if a get operation cannot be performed (check connection).
+     */
+    @Nullable
     public IProfile GetProfile(KademliaId userKey) throws IOException {
         KademliaId profileKey = IncrementKey(userKey);
         String profileJson = Get(profileKey);
         if(profileJson == null)
             return null;
-        return gson.fromJson(profileJson, IProfile.class);
+        return gson.fromJson(profileJson, profile.GetType());
     }
 
     public class ListenThread extends Thread {

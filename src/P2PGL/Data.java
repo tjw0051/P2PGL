@@ -4,8 +4,11 @@ import com.google.gson.Gson;
 import kademlia.dht.KadContent;
 import kademlia.node.KademliaId;
 
+
 /**
- * Created by t_j_w on 03/03/2016.
+ *  Implementation of KadContent from Kademlia for storing data on the DHT.
+ *  @see kademlia.dht.KadContent
+ *  @author Thomas Walker
  */
 public class Data implements KadContent {
     private String type = "Data";
