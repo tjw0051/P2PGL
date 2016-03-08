@@ -20,7 +20,6 @@ public class ConnectionTest {
     JKademliaNode server;
     Connection connection;
 
-
     @org.junit.Test
     public void testConnect() throws Exception {
         //Create bootstrap node.

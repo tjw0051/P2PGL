@@ -25,10 +25,11 @@ public class Connection {
     private JKademliaNode node;
     private ListenThread listenThread;
     private Gson gson;
+    private List<UDPChannel> udpChannels;
 
     /**
      * Instantiate a new connection to a network.
-     * @param profile   Connection parameters for peer (e.g. port, IP Address, key)
+     * @param profile   Connection parameters for peer (e.g. port, IP Address, name)
      */
     public Connection(Profile profile) {
         this.profile = profile;
@@ -44,7 +45,7 @@ public class Connection {
      */
     public void Connect(String serverName, InetAddress destIPAddress, int destPort) throws IOException {
         try {
-            node = new JKademliaNode(profile.GetKey(), new KademliaId(), profile.GetPort());
+            node = new JKademliaNode(profile.GetName(), profile.GetKey(), profile.GetPort());
             Node bootstrapNode = new Node(new KademliaId(serverName), destIPAddress, destPort);
             node.bootstrap(bootstrapNode);
         } catch(IOException ioe) {
@@ -53,7 +54,7 @@ public class Connection {
     }
 
     /**
-     * Generates a KademliaId key with the last byte incremented by 1
+     * Generates a KademliaId name with the last byte incremented by 1
      * @see Connection#StoreProfile()
      * @param kadId ID to be incremented
      * @return  Incremented ID.
@@ -103,8 +104,8 @@ public class Connection {
     }
 
     /**
-     * Store string data at destination key on DHT.
-     * @param destKey       key to store data at.
+     * Store string data at destination name on DHT.
+     * @param destKey       name to store data at.
      * @param stringData    String data to store.
      * @throws IOException  Thrown when a put operation cannot be performed (check connection).
      */
@@ -114,8 +115,8 @@ public class Connection {
     }
 
     /**
-     * Store string data at destination key on DHT.
-     * @param destKey       key to store data at.
+     * Store string data at destination name on DHT.
+     * @param destKey       name to store data at.
      * @param stringData    String data to store.
      * @throws IOException  Thrown when a put operation cannot be performed (check connection).
      */
@@ -125,7 +126,7 @@ public class Connection {
     }
 
     /**
-     * Store string data at destination key on DHT.
+     * Store string data at destination name on DHT.
      * @param data      Data to be stored.
      * @throws IOException  Thrown when a put operation cannot be performed (check connection).
      */
@@ -138,7 +139,7 @@ public class Connection {
     }
 
     /**
-     * Store user profile on DHT. Destination key of profile is
+     * Store user profile on DHT. Destination name of profile is
      * this nodeId with last byte incremented by 1.
      * @see Connection#IncrementKey(KademliaId)
      * @return  Key profile is stored at.

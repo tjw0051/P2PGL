@@ -1,5 +1,8 @@
 package P2PGL;
 
+import kademlia.dht.KadContent;
+import kademlia.node.KademliaId;
+
 import java.lang.reflect.Type;
 import java.net.InetAddress;
 
@@ -20,7 +23,9 @@ public interface IProfile {
     /**
      * @return  String  Get Key of profile owner.
      */
-    String GetKey();
+    KademliaId GetKey();
+
+    String GetName();
 
     /**
      * @return  Type    Must return type of profile (e.g. Profile.class)
