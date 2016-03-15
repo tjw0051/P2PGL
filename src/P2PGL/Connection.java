@@ -46,8 +46,9 @@ public class Connection {
     public void Connect(String serverName, InetAddress destIPAddress, int destPort) throws IOException {
         try {
             node = new JKademliaNode(profile.GetName(), profile.GetKey(), profile.GetPort());
-            Node bootstrapNode = new Node(new KademliaId(serverName), destIPAddress, destPort);
+            Node bootstrapNode = new Node(new KademliaId(PadKey(serverName)), destIPAddress, destPort);
             node.bootstrap(bootstrapNode);
+            StoreProfile();
         } catch(IOException ioe) {
             throw ioe;
         }
@@ -82,7 +83,7 @@ public class Connection {
      */
     @Nullable
     public String Get(String id) throws IOException {
-        return Get(new KademliaId(id));
+        return Get(new KademliaId(PadKey(id)));
     }
 
     /**
@@ -121,7 +122,7 @@ public class Connection {
      * @throws IOException  Thrown when a put operation cannot be performed (check connection).
      */
     public void Store(String destKey, String stringData) throws IOException{
-        Data data = new Data(node.getNode().getNodeId().toString(), new KademliaId(destKey), stringData, "String");
+        Data data = new Data(node.getNode().getNodeId().toString(), new KademliaId(PadKey(destKey)), stringData, "String");
         Store(data);
     }
 
@@ -167,7 +168,10 @@ public class Connection {
     public static String PadKey(String key) {
         if(key.length() > 20)
             throw new IllegalArgumentException("Key must be < 20 characters long");
-        return String.format("%-20s", key).replace(' ', '0');
+        if(key.length() < 20)
+            return String.format("%-20s", key).replace(' ', '0');
+        else
+            return key;
     }
 
     public KademliaId GetId() {
@@ -195,6 +199,10 @@ public class Connection {
         if(profileJson == null)
             return null;
         return gson.fromJson(profileJson, profile.GetType());
+    }
+
+    public IProfile GetProfile(String userKey) throws IOException {
+        return GetProfile(new KademliaId(userKey));
     }
 
     public class ListenThread extends Thread {
