@@ -22,8 +22,8 @@ import java.util.List;
  */
 public class Connection {
     private IProfile profile;
+    private Class profileType;
     private JKademliaNode node;
-    private ListenThread listenThread;
     private Gson gson;
     private List<UDPChannel> udpChannels;
 
@@ -31,8 +31,9 @@ public class Connection {
      * Instantiate a new connection to a network.
      * @param profile   Connection parameters for peer (e.g. port, IP Address, name)
      */
-    public Connection(Profile profile) {
+    public Connection( Profile profile) {
         this.profile = profile;
+        //this.profileType = type;
         gson = new Gson();
     }
 
@@ -48,6 +49,15 @@ public class Connection {
             node = new JKademliaNode(profile.GetName(), profile.GetKey(), profile.GetPort());
             Node bootstrapNode = new Node(new KademliaId(PadKey(serverName)), destIPAddress, destPort);
             node.bootstrap(bootstrapNode);
+            StoreProfile();
+        } catch(IOException ioe) {
+            throw ioe;
+        }
+    }
+
+    public void Connect() throws IOException {
+        try {
+            node = new JKademliaNode(profile.GetName(), profile.GetKey(), profile.GetPort());
             StoreProfile();
         } catch(IOException ioe) {
             throw ioe;
@@ -70,6 +80,7 @@ public class Connection {
     public void Disconnect() throws IOException {
         try {
             node.shutdown(false);
+            node = null;
         } catch(IOException ioe) {
             throw ioe;
         }
@@ -154,12 +165,13 @@ public class Connection {
     }
 
     //TODO: return list
-    public String[] ListUsers() {
+    public KademliaId[] ListUsers() {
         KademliaRoutingTable routingTable = node.getRoutingTable();
         List<Contact> routingContacts =  routingTable.getAllContacts();
-        String[] users = new String[routingContacts.size()];
+        //String[] users = new String[routingContacts.size()];
+        KademliaId[] users = new KademliaId[routingContacts.size()];
         for(int i = 0; i < routingContacts.size(); i++) {
-            users[i] = routingContacts.get(i).getNode().getNodeId().toString();
+            users[i] = routingContacts.get(i).getNode().getNodeId();
         }
         return users;
     }
@@ -202,11 +214,7 @@ public class Connection {
     }
 
     public IProfile GetProfile(String userKey) throws IOException {
-        return GetProfile(new KademliaId(userKey));
-    }
-
-    public class ListenThread extends Thread {
-
+        return GetProfile(new KademliaId(PadKey(userKey)));
     }
 
     public static void main(String[] args) {

@@ -102,10 +102,10 @@ public class ConnectionTest {
     @Test
     public void testListUsers() throws Exception {
         Connect(4446, 4447);
-        String[] users = connection.ListUsers();
-        List<String> userList = Arrays.asList(users);
-        String clientId = connection.GetId().toString();
-        String serverId = server.getNode().getNodeId().toString();
+        KademliaId[] users = connection.ListUsers();
+        List<KademliaId> userList = Arrays.asList(users);
+        KademliaId clientId = connection.GetId();
+        KademliaId serverId = server.getNode().getNodeId();
 
         assertTrue(userList.size() == 2);
         assertTrue(userList.contains(clientId));
