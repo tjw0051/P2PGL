@@ -12,29 +12,35 @@ public class Profile implements IProfile{
 
     InetAddress address;
     int port;
+    int udpPort;
     String name;
-    KademliaId key;
+    Key key;
 
-    public Profile(InetAddress address, int port, String name, KademliaId key) {
+    public Profile(InetAddress address, int port, int udpPort, String name, Key key) {
         this.address = address;
         this.port = port;
+        this.udpPort = udpPort;
         this.name = name;
+        this.key = key;
+    }
+
+    public Profile(InetAddress address, int port, String name, Key key) {
+        this(address, port, port+1, name, key);
     }
 
     public Profile(InetAddress address, int port, String name) {
-        this.address = address;
-        this.port = port;
-        this.name = name;
-        this.key = new KademliaId();
+        this(address, port, port+1, name, new Key());
     }
 
     public InetAddress GetIPAddress() { return address; }
 
     public int GetPort() { return port; }
 
+    public int GetUDPPort() { return udpPort; }
+
     public String GetName() { return name; }
 
-    public KademliaId GetKey() { return key; }
+    public Key GetKey() { return key; }
 
     public Type GetType() { return Profile.class; }
 }

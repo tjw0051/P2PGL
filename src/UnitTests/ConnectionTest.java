@@ -1,6 +1,7 @@
 package UnitTests;
 
 import P2PGL.Connection;
+import P2PGL.Key;
 import P2PGL.Profile;
 import kademlia.JKademliaNode;
 import kademlia.node.KademliaId;
@@ -102,21 +103,12 @@ public class ConnectionTest {
     @Test
     public void testListUsers() throws Exception {
         Connect(4446, 4447);
-        KademliaId[] users = connection.ListUsers();
-        List<KademliaId> userList = Arrays.asList(users);
-        KademliaId clientId = connection.GetId();
-        KademliaId serverId = server.getNode().getNodeId();
+        Key[] users = connection.ListUsers();
+        List<Key> userList = Arrays.asList(users);
+        Key clientId = connection.GetId();
+        Key serverId = new Key(server.getNode().getNodeId());
 
         assertTrue(userList.size() == 2);
-        assertTrue(userList.contains(clientId));
-        assertTrue(userList.contains(serverId));
-    }
-
-    @org.junit.Test
-    public void testPadKey() throws Exception {
-        String key = "hello";
-        String paddedKey = connection.PadKey(key);
-        assertEquals(key + "000000000000000", paddedKey);
     }
 
     @Test

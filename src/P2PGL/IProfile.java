@@ -21,9 +21,14 @@ public interface IProfile {
     int GetPort();
 
     /**
+     * @return int  UDP Port of profile owner.
+     */
+    int GetUDPPort();
+
+    /**
      * @return  String  Get Key of profile owner.
      */
-    KademliaId GetKey();
+    Key GetKey();
 
     String GetName();
 
