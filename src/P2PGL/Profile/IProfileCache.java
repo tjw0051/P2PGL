@@ -1,4 +1,6 @@
-package P2PGL;
+package P2PGL.Profile;
+
+import P2PGL.Profile.IProfile;
 
 /**
  * Created by t_j_w on 18/03/2016.

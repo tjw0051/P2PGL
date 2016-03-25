@@ -1,4 +1,4 @@
-package P2PGL;
+package P2PGL.DHT;
 
 import com.google.gson.Gson;
 import kademlia.dht.KadContent;

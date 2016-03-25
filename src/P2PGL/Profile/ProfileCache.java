@@ -1,4 +1,8 @@
-package P2PGL;
+package P2PGL.Profile;
+
+import P2PGL.IKey;
+import P2PGL.Profile.IProfile;
+import P2PGL.Profile.IProfileCache;
 
 import java.util.*;
 
@@ -92,6 +96,17 @@ public class ProfileCache implements IProfileCache {
 
     public boolean Contains(String name) {
         return profileNames.contains(name);
+    }
+
+    public boolean Contains(IKey key) {
+        Iterator iter = profilesAtTime.entrySet().iterator();
+        while(iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            if(((IProfile)entry.getValue()).GetKey().ToBytes() == key.ToBytes()) {
+                return true;
+            }
+        }
+        return false;
     }
 
 

@@ -5,4 +5,6 @@ package P2PGL;
  */
 public interface IKey {
     String toString();
+    IKey Next();
+    byte[] ToBytes();
 }

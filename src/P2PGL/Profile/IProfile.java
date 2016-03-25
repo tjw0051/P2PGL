@@ -1,5 +1,6 @@
-package P2PGL;
+package P2PGL.Profile;
 
+import P2PGL.IKey;
 import kademlia.dht.KadContent;
 import kademlia.node.KademliaId;
 
@@ -28,7 +29,7 @@ public interface IProfile {
     /**
      * @return  String  Get Key of profile owner.
      */
-    Key GetKey();
+    IKey GetKey();
 
     String GetName();
 

@@ -1,5 +1,6 @@
 package P2PGL.EventListener;
 
+import P2PGL.IKey;
 import P2PGL.UDP.UDPPacket;
 
 import java.net.InetAddress;
@@ -8,5 +9,5 @@ import java.net.InetAddress;
  * Created by t_j_w on 17/03/2016.
  */
 public interface MessageReceivedListener {
-    void MessageReceived(String messageType);
+    void MessageReceived(String messageType, IKey sender);
 }

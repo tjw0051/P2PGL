@@ -1,8 +1,9 @@
 package UnitTests;
 
-import P2PGL.Connection;
-import P2PGL.Key;
-import P2PGL.Profile;
+import P2PGL.*;
+import P2PGL.DHT.KademliaFacade;
+import P2PGL.Profile.IProfile;
+import P2PGL.Profile.Profile;
 import kademlia.JKademliaNode;
 import kademlia.node.KademliaId;
 
@@ -10,7 +11,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 
 import static org.junit.Assert.*;
 
@@ -20,6 +20,7 @@ import static org.junit.Assert.*;
 public class ConnectionTest {
     JKademliaNode server;
     Connection connection;
+    Profile _profile;
 
     @org.junit.Test
     public void testConnect() throws Exception {
@@ -30,19 +31,20 @@ public class ConnectionTest {
             fail();
         }
     }
-
+    /*
     @Test
     public void testIncrementKey() throws Exception {
         KademliaId kadId = new KademliaId("hello000000000000000");
         String idString = kadId.toString(); // 68656C6C6F303030303030303030303030303030
-        KademliaId incrKadId = Connection.IncrementKey(kadId);
+        //KademliaId incrKadId = Connection.IncrementKey(kadId);
+
         String incrIdString = incrKadId.toString();
         assertEquals(incrIdString, "68656C6C6F303030303030303030303030303031");
     }
-
+    */
     private void CreateConnection(int port) {
-        Profile profile = new Profile(java.net.InetAddress.getLoopbackAddress(), port, "key");
-        connection = new Connection(profile);
+        _profile = new Profile(java.net.InetAddress.getLoopbackAddress(), port, "key");
+        connection = new Connection(_profile, new KademliaFacade());
     }
 
     private void Connect(int clientPort, int serverPort) throws Exception {
@@ -61,8 +63,9 @@ public class ConnectionTest {
     public void testGet() throws Exception {
         try {
             Connect(4454, 4455);
-            connection.Store("newKey00000000000000", "hello");
-            String data = connection.Get("newKey00000000000000");
+            //connection.Store("newKey00000000000000", "hello");
+            connection.Store(new Key("newKey00000000000000"), "hello");
+            String data = connection.Get(new Key("newKey00000000000000"));
             assertEquals(data, "hello");
         } catch(Exception e) {
             fail();
@@ -83,7 +86,7 @@ public class ConnectionTest {
     public void testStore() throws Exception {
         try {
             Connect(4444, 4445);
-            connection.Store("newKey00000000000000", "hello");
+            connection.Store(new Key("newKey00000000000000"), "hello");
         } catch(Exception e) {
             fail();
         }
@@ -103,9 +106,9 @@ public class ConnectionTest {
     @Test
     public void testListUsers() throws Exception {
         Connect(4446, 4447);
-        Key[] users = connection.ListUsers();
-        List<Key> userList = Arrays.asList(users);
-        Key clientId = connection.GetId();
+        IKey[] users = connection.ListUsers();
+        List<IKey> userList = Arrays.asList(users);
+        IKey clientId = connection.GetId();
         Key serverId = new Key(server.getNode().getNodeId());
 
         assertTrue(userList.size() == 2);
@@ -122,11 +125,12 @@ public class ConnectionTest {
     public void testGetProfile() throws Exception {
         try {
             Connect(4452, 4453);
-            KademliaId profKey = connection.StoreProfile();
+            IKey profKey = connection.StoreProfile();
             Thread.sleep(200);
-            Profile prof = (Profile) connection.GetProfile(connection.GetId());
-            Profile localProfile = (Profile) connection.GetLocalProfile();
-            assertTrue(prof.GetKey().toString().equals(localProfile.GetKey().toString()));
+            //IProfile localProfile = connection.GetLocalProfile();
+            IProfile prof = connection.GetProfile(_profile.GetKey());
+            //IProfile localProfile = connection.GetLocalProfile();
+            assertTrue(prof.GetKey().toString().equals(_profile.GetKey().toString()));
         } catch (Exception e) {
             fail();
         }
@@ -134,11 +138,9 @@ public class ConnectionTest {
 
     @org.junit.Test
     public void testSend() throws Exception {
-
     }
 
     @org.junit.Test
     public void testReadMessageStream() throws Exception {
-
     }
 }

@@ -2,6 +2,8 @@ package P2PGL;
 
 import kademlia.node.KademliaId;
 
+import java.util.Arrays;
+
 /**
  * Created by t_j_w on 17/03/2016.
  */
@@ -11,9 +13,11 @@ public class Key implements IKey {
     public Key() {
         kademliaId = new KademliaId();
     }
+
     public Key(KademliaId kademliaId) {
         this.kademliaId = kademliaId;
     }
+
     public Key(String key) {
         this.kademliaId = new KademliaId(PadKey(key));
     }
@@ -21,6 +25,7 @@ public class Key implements IKey {
     public KademliaId getKademliaId() {
         return kademliaId;
     }
+
     public String toString() {
         return kademliaId.toString();
     }
@@ -33,5 +38,15 @@ public class Key implements IKey {
             return String.format("%-20s", key).replace(' ', '0');
         else
             return key;
+    }
+
+    public IKey Next() {
+        byte[] bytes = Arrays.copyOf(kademliaId.getBytes(), kademliaId.getBytes().length);
+        bytes[bytes.length - 1]++;
+        return new Key(new KademliaId(bytes));
+    }
+
+    public byte[] ToBytes() {
+        return kademliaId.getBytes();
     }
 }

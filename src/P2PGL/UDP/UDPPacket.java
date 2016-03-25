@@ -1,5 +1,7 @@
 package P2PGL.UDP;
 
+import P2PGL.IKey;
+
 import java.lang.reflect.Type;
 
 /**
@@ -16,10 +18,13 @@ public class UDPPacket {
      */
     public String type;
 
+    public IKey sender;
+
     public UDPPacket() {}
 
-    public UDPPacket(String message, String type) {
+    public UDPPacket(String message, String type, IKey sender) {
         this.message = message;
         this.type = type;
+        this.sender = sender;
     }
 }

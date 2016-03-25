@@ -1,6 +1,7 @@
-package P2PGL;
+package P2PGL.Profile;
 
-import kademlia.node.KademliaId;
+import P2PGL.IKey;
+import P2PGL.Key;
 
 import java.lang.reflect.Type;
 import java.net.InetAddress;
@@ -8,15 +9,15 @@ import java.net.InetAddress;
 /**
  * Created by t_j_w on 03/03/2016.
  */
-public class Profile implements IProfile{
+public class Profile implements IProfile {
 
     InetAddress address;
     int port;
     int udpPort;
     String name;
-    Key key;
+    IKey key;
 
-    public Profile(InetAddress address, int port, int udpPort, String name, Key key) {
+    public Profile(InetAddress address, int port, int udpPort, String name, IKey key) {
         this.address = address;
         this.port = port;
         this.udpPort = udpPort;
@@ -24,7 +25,7 @@ public class Profile implements IProfile{
         this.key = key;
     }
 
-    public Profile(InetAddress address, int port, String name, Key key) {
+    public Profile(InetAddress address, int port, String name, IKey key) {
         this(address, port, port+1, name, key);
     }
 
@@ -40,7 +41,7 @@ public class Profile implements IProfile{
 
     public String GetName() { return name; }
 
-    public Key GetKey() { return key; }
+    public IKey GetKey() { return key; }
 
     public Type GetType() { return Profile.class; }
 }

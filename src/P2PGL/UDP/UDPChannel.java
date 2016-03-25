@@ -1,9 +1,12 @@
 package P2PGL.UDP;
 
 import P2PGL.EventListener.MessageReceivedListener;
-import P2PGL.IProfile;
-import P2PGL.ProfileCache;
+import P2PGL.IKey;
+import P2PGL.InterfaceAdapter;
+import P2PGL.Profile.IProfile;
+import P2PGL.Profile.ProfileCache;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -17,7 +20,6 @@ import java.util.*;
  * in the channel.
  */
 public class UDPChannel implements IUDPChannel {
-    private String channelName;
     private int port;
     private Queue<UDPPacket> incomingQueue;
     private List<MessageReceivedListener> messageReceivedListeners;
@@ -25,16 +27,18 @@ public class UDPChannel implements IUDPChannel {
     private ProfileCache profileCache;
     private boolean listening;
     private Gson gson;
+    private IProfile profile;
 
     List<IProfile> users;
 
-    public UDPChannel(String channelName, int port) {
-        this.channelName = channelName;
+    public UDPChannel(IProfile profile, int port) {
+        this.profile = profile;
         this.port = port;
         messageReceivedListeners = new ArrayList<>();
         profileCache = new ProfileCache();
         listening = false;
-        this.gson = new Gson();
+        GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(IKey.class, new InterfaceAdapter<IKey>());
+        this.gson = gsonBuilder.create();
     }
 
     public void Listen() {
@@ -44,8 +48,6 @@ public class UDPChannel implements IUDPChannel {
         //Start listening to messages, create event for receive trigger.
     }
 
-    public String toString() { return channelName; }
-
     public void addListener(MessageReceivedListener listener) {
         messageReceivedListeners.add(listener);
     }
@@ -53,9 +55,9 @@ public class UDPChannel implements IUDPChannel {
     /** Called when listener Thread receives a new message.
      * @param messageType   Serialized JSON message received.
      */
-    private void MessageReceived(String messageType) {
+    private void MessageReceived(String messageType, IKey sender) {
         for(MessageReceivedListener listener : messageReceivedListeners) {
-            listener.MessageReceived(messageType);
+            listener.MessageReceived(messageType, sender);
         }
     }
 
@@ -65,6 +67,10 @@ public class UDPChannel implements IUDPChannel {
      */
     public void Add(IProfile profile) {
         profileCache.Add(profile);
+    }
+
+    public boolean Contains(IKey user) {
+        return profileCache.Contains(user);
     }
 
     public void Send(IProfile profile, String message) throws IOException{
@@ -80,7 +86,7 @@ public class UDPChannel implements IUDPChannel {
 
     public String SerializePacket(Object obj, Type type) {
         String data = gson.toJson(obj, type);
-        UDPPacket packet = new UDPPacket(data, type.getTypeName());
+        UDPPacket packet = new UDPPacket(data, type.getTypeName(), profile.GetKey());
         return SerializePacket(packet);
     }
 
@@ -162,7 +168,7 @@ public class UDPChannel implements IUDPChannel {
                         String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                         UDPPacket packet = gson.fromJson(serializedData, UDPPacket.class);
                         incomingQueue.add(packet);
-                        MessageReceived(packet.type);
+                        MessageReceived(packet.type, packet.sender);
                         //TODO: If update from unknown player, add to cache.
                     } catch(IOException ioe) {
                         System.out.println("IOException");

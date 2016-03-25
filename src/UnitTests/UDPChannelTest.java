@@ -1,6 +1,7 @@
 package UnitTests;
 
-import P2PGL.Profile;
+import P2PGL.Profile.IProfile;
+import P2PGL.Profile.Profile;
 import P2PGL.UDP.UDPChannel;
 import org.junit.Test;
 
@@ -39,12 +40,6 @@ public class UDPChannelTest {
     }
 
     @Test
-    public void testToString() throws Exception {
-        CreateUDPChannel(5001);
-        assertTrue(udpChannel.toString().equals("channel_0"));
-    }
-
-    @Test
     public void testAddListener() throws Exception {
 
     }
@@ -57,7 +52,8 @@ public class UDPChannelTest {
     @Test
     public void testSend() throws Exception {
         CreateUDPChannel(5002);
-        UDPChannel serverUDP = new UDPChannel("channel_1", 5010);
+        IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_1");
+        UDPChannel serverUDP = new UDPChannel(prof, 5010);
         serverUDP.Listen();
         //UDPChannel is profile port + 1 : profile must be set to 5009.
         Profile profile = new Profile(InetAddress.getLoopbackAddress(), 5009, "channel_0");
@@ -83,6 +79,7 @@ public class UDPChannelTest {
     }
 
     private void CreateUDPChannel(int port) {
-        udpChannel = new UDPChannel("channel_0", port);
+        IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_0");
+        udpChannel = new UDPChannel(prof, port);
     }
 }
