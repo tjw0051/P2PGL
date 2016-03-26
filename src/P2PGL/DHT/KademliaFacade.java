@@ -13,6 +13,7 @@ import kademlia.routing.KademliaRoutingTable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * Wrapper for Kademlia functions.
@@ -24,7 +25,10 @@ public class KademliaFacade implements IDHTFacade {
     private KademliaId key;
     private int port;
 
-    public KademliaFacade() {
+    public KademliaFacade() {}
+
+    public KademliaFacade(IProfile profile) {
+        SetProfile(profile);
     }
 
     @Override
@@ -44,6 +48,10 @@ public class KademliaFacade implements IDHTFacade {
     @Override
     public void Connect() throws IOException {
         node = new JKademliaNode(name, key, port);
+    }
+
+    public boolean isConnected() {
+        return node.getServer().isRunning();
     }
 
     @Override

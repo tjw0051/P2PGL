@@ -19,7 +19,7 @@ public class Key implements IKey {
     }
 
     public Key(String key) {
-        this.kademliaId = new KademliaId(PadKey(key));
+        this.kademliaId = new KademliaId(Format(key));
     }
 
     public KademliaId getKademliaId() {
@@ -31,13 +31,17 @@ public class Key implements IKey {
     }
 
     //TODO: finish
-    public static String PadKey(String key) {
+    public String Format(String key) {
         if(key.length() > 20)
             throw new IllegalArgumentException("Key must be < 20 characters long");
         if(key.length() < 20)
             return String.format("%-20s", key).replace(' ', '0');
         else
             return key;
+    }
+
+    public boolean Equals(IKey key) {
+        return Arrays.equals(this.ToBytes(), key.ToBytes());
     }
 
     public IKey Next() {

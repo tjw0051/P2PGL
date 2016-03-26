@@ -28,7 +28,8 @@ public class KeyTest {
     @org.junit.Test
     public void testPadKey() throws Exception {
         String key = "hello";
-        String paddedKey = Key.PadKey(key);
+        Key aKey = new Key();
+        String paddedKey = aKey.Format(key);
         assertEquals(key + "000000000000000", paddedKey);
     }
 }

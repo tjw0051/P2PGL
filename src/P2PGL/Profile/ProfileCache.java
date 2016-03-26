@@ -102,9 +102,9 @@ public class ProfileCache implements IProfileCache {
         Iterator iter = profilesAtTime.entrySet().iterator();
         while(iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
-            if(((IProfile)entry.getValue()).GetKey().ToBytes() == key.ToBytes()) {
+            //if(((IProfile)entry.getValue()).GetKey().ToBytes() == key.ToBytes()) {
+            if(((IProfile)entry.getValue()).GetKey().Equals(key))
                 return true;
-            }
         }
         return false;
     }

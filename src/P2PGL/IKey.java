@@ -7,4 +7,6 @@ public interface IKey {
     String toString();
     IKey Next();
     byte[] ToBytes();
+    String Format(String key);
+    boolean Equals(IKey key);
 }

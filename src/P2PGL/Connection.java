@@ -58,13 +58,17 @@ public class Connection{
             dht.Connect(serverName, destIPAddress, destPort);
             /*
             node = new JKademliaNode(profile.GetName(), profile.GetKey().getKademliaId(), profile.GetPort());
-            Node bootstrapNode = new Node(new KademliaId(Key.PadKey(serverName)), destIPAddress, destPort);
+            Node bootstrapNode = new Node(new KademliaId(Key.Format(serverName)), destIPAddress, destPort);
             node.bootstrap(bootstrapNode);
             */
             StoreProfile();
         } catch(IOException ioe) {
             throw ioe;
         }
+    }
+
+    public boolean isConnected() {
+        return dht.isConnected();
     }
 
     //TODO: Remove profile and other pieces of player.
@@ -102,7 +106,7 @@ public class Connection{
      */
 
     public void Store(IKey destKey, String stringData) throws IOException{
-        //Data data = new Data(node.getNode().getNodeId().toString(), new KademliaId(Key.PadKey(destKey)), stringData, "String");
+        //Data data = new Data(node.getNode().getNodeId().toString(), new KademliaId(Key.Format(destKey)), stringData, "String");
         //Store(data);
         dht.Store(destKey, stringData);
     }
@@ -156,7 +160,7 @@ public class Connection{
             return null;
         return gson.fromJson(profileJson, profile.GetType());
     }
-    
+
     public List<IProfile> GetProfiles(IKey[] keys) throws IOException{
         List<IProfile> profiles = new ArrayList<IProfile>();
         for(int i = 0; i < keys.length; i++) {

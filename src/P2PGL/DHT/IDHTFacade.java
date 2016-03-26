@@ -16,6 +16,7 @@ public interface IDHTFacade {
     void SetProfile(IProfile profile);
     void Connect() throws IOException;
     void Connect(String serverName, InetAddress serverAddress, int serverPort) throws IOException;
+    boolean isConnected();
     void Disconnect() throws IOException;
     void Store(IKey key, String data) throws IOException;
     //TODO: Use IKey for keys instead of strings.
