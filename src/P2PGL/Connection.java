@@ -56,11 +56,6 @@ public class Connection{
     public void Connect(String serverName, InetAddress destIPAddress, int destPort) throws IOException {
         try {
             dht.Connect(serverName, destIPAddress, destPort);
-            /*
-            node = new JKademliaNode(profile.GetName(), profile.GetKey().getKademliaId(), profile.GetPort());
-            Node bootstrapNode = new Node(new KademliaId(Key.Format(serverName)), destIPAddress, destPort);
-            node.bootstrap(bootstrapNode);
-            */
             StoreProfile();
         } catch(IOException ioe) {
             throw ioe;
@@ -75,10 +70,6 @@ public class Connection{
     public void Disconnect() throws IOException {
         try {
             dht.Disconnect();
-            /*
-            node.shutdown(false);
-            node = null;
-            */
         } catch(IOException ioe) {
             ioe.printStackTrace();
             throw ioe;
@@ -87,16 +78,8 @@ public class Connection{
 
     @Nullable
     public String Get(IKey key) throws IOException {
-        //return Get(key.kademliaId);
         return dht.Get(key);
     }
-
-    /**
-     * Get a global data object from the DHT.
-     * @param key    Key of data.
-     * @return      data String value.
-     * @throws IOException  Thrown when a get operation cannot be performed (check connection).
-     */
 
     /**
      * Store string data at destination name on DHT.
@@ -175,8 +158,5 @@ public class Connection{
         return profiles;
     }
 
-
-    public static void main(String[] args) {
-    }
-
+    public static void main(String[] args) { }
 }

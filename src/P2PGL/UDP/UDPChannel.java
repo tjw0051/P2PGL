@@ -3,8 +3,7 @@ package P2PGL.UDP;
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.IKey;
 import P2PGL.InterfaceAdapter;
-import P2PGL.Profile.IProfile;
-import P2PGL.Profile.ProfileCache;
+import P2PGL.Profile.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -24,12 +23,10 @@ public class UDPChannel implements IUDPChannel {
     private Queue<UDPPacket> incomingQueue;
     private List<MessageReceivedListener> messageReceivedListeners;
     private Thread listenThread;
-    private ProfileCache profileCache;
+    private IProfileCache profileCache;
     private boolean listening;
     private Gson gson;
     private IProfile profile;
-
-    List<IProfile> users;
 
     public UDPChannel(IProfile profile, int port) {
         this.profile = profile;
@@ -73,6 +70,10 @@ public class UDPChannel implements IUDPChannel {
         return profileCache.Contains(user);
     }
 
+    public void ClearContacts() {
+        profileCache.Clear();
+    }
+
     public void Send(IProfile profile, String message) throws IOException{
         Send(profile, message, String.class);
     }
@@ -95,9 +96,14 @@ public class UDPChannel implements IUDPChannel {
     }
 
     public UDPPacket DeserializePacket(String ser) {
-        return (UDPPacket)gson.fromJson(ser, UDPPacket.class);
+        return gson.fromJson(ser, UDPPacket.class);
     }
 
+    /** Send a message to all clients in the channel (profile cache)
+     * @param obj   Object to be sent.
+     * @param type  Type of obj.
+     * @throws IOException  Error sending message.
+     */
     public void Broadcast(Object obj, Type type) throws IOException{
         Collection<IProfile> profiles = profileCache.Get();
         Iterator iter = profiles.iterator();
@@ -120,6 +126,9 @@ public class UDPChannel implements IUDPChannel {
         Broadcast(message, String.class);
     }
 
+    /** Read next UDPPacket in queue and remove it.
+     * @return
+     */
     public UDPPacket ReadNextPacket() {
         if(!incomingQueue.isEmpty())
             return incomingQueue.remove();
@@ -127,6 +136,11 @@ public class UDPChannel implements IUDPChannel {
             return null;
     }
 
+    /** Read next object in queue and remove it.
+     * @param <T>
+     * @return
+     * @throws ClassNotFoundException
+     */
     public  <T> T ReadNext() throws ClassNotFoundException {
         if(incomingQueue.isEmpty())
             return null;
@@ -134,13 +148,25 @@ public class UDPChannel implements IUDPChannel {
         return gson.fromJson(packet.message, (Type)Class.forName(packet.type));
     }
 
+    /** Read next UDPPacket in the queue without removing it.
+     * @return
+     */
     public UDPPacket PeekNextPacket() {
         return incomingQueue.peek();
     }
 
+    /** Read next object in the queue without removing it.
+     * @param <T>   Type of object held in UDPPacket
+     * @return  Object held in UDPPacket
+     * @throws ClassNotFoundException   Object cannot be cast to any type found.
+     */
     public <T> T PeekNext() throws ClassNotFoundException{
         UDPPacket packet = incomingQueue.peek();
         return gson.fromJson(packet.message, (Type)Class.forName(packet.type));
+    }
+
+    public void ClearQueue() {
+        incomingQueue.clear();
     }
 
     /**
@@ -166,7 +192,7 @@ public class UDPChannel implements IUDPChannel {
                         System.out.println("Message received");
                         byte[] receivedData = receivedPacket.getData();
                         String serializedData = new String(receivedData, 0, receivedPacket.getLength());
-                        UDPPacket packet = gson.fromJson(serializedData, UDPPacket.class);
+                        UDPPacket packet = DeserializePacket(serializedData);
                         incomingQueue.add(packet);
                         MessageReceived(packet.type, packet.sender);
                         //TODO: If update from unknown player, add to cache.
@@ -184,7 +210,6 @@ public class UDPChannel implements IUDPChannel {
             }
         }
     }
-
     public void Stop() {
         listening = false;
     }

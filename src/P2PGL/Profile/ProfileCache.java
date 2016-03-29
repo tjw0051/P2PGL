@@ -87,17 +87,6 @@ public class ProfileCache implements IProfileCache {
         return null;
     }
 
-    /**
-     * @return String   List of names for each IProfile
-     */
-    public List<String> GetNames() {
-        return profileNames;
-    }
-
-    public boolean Contains(String name) {
-        return profileNames.contains(name);
-    }
-
     public boolean Contains(IKey key) {
         Iterator iter = profilesAtTime.entrySet().iterator();
         while(iter.hasNext()) {

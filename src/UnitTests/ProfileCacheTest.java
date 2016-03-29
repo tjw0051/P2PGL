@@ -17,6 +17,24 @@ import static org.junit.Assert.*;
 public class ProfileCacheTest {
 
     @Test
+    public void testAdd() {
+        ProfileCache profileCache = AddEntry();
+    }
+
+    private ProfileCache AddEntry() {
+        ProfileCache profileCache = new ProfileCache();
+        profileCache.Add(new Profile(InetAddress.getLoopbackAddress(), 4000, "hello"));
+        return profileCache;
+    }
+
+    @Test
+    public void Get() {
+        ProfileCache profileCache = AddEntry();
+        IProfile prof = profileCache.Get("hello");
+        assertTrue(prof != null);
+    }
+
+    @Test
     public void testContains() throws Exception {
         ProfileCache cache = new ProfileCache();
         IKey key1 = new Key("test");
