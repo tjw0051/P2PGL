@@ -16,23 +16,25 @@ public class Profile implements IProfile {
     InetAddress address;
     int port;
     int udpPort;
+    String udpChannel;
     String name;
     IKey key;
 
-    public Profile(InetAddress address, int port, int udpPort, String name, IKey key) {
+    public Profile(InetAddress address, int port, int udpPort, String udpChannel, String name, IKey key) {
         this.address = address;
         this.port = port;
         this.udpPort = udpPort;
+        this.udpChannel = udpChannel;
         this.name = name;
         this.key = key;
     }
 
     public Profile(InetAddress address, int port, String name, IKey key) {
-        this(address, port, port+1, name, key);
+        this(address, port, port+1, null, name, key);
     }
 
     public Profile(InetAddress address, int port, String name) {
-        this(address, port, port+1, name, new Key());
+        this(address, port, port+1, null, name, new Key());
     }
 
     public InetAddress GetIPAddress() { return address; }
@@ -40,6 +42,10 @@ public class Profile implements IProfile {
     public int GetPort() { return port; }
 
     public int GetUDPPort() { return udpPort; }
+
+    public String GetUDPChannel() { return udpChannel; }
+
+    public void SetUDPChannel(String udpChannel) { this.udpChannel = udpChannel; }
 
     public String GetName() { return name; }
 

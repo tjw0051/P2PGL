@@ -1,11 +1,13 @@
 package P2PGL.UDP;
 
 import P2PGL.EventListener.MessageReceivedListener;
+import P2PGL.EventListener.NewContactListener;
 import P2PGL.IKey;
 import P2PGL.InterfaceAdapter;
 import P2PGL.Profile.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -20,32 +22,39 @@ import java.util.*;
  */
 public class UDPChannel implements IUDPChannel {
     private int port;
+    private String channelName;
     private Queue<UDPPacket> incomingQueue;
     private List<MessageReceivedListener> messageReceivedListeners;
+    private List<NewContactListener> newContactListeners;
     private Thread listenThread;
     private IProfileCache profileCache;
     private boolean listening;
     private Gson gson;
     private IProfile profile;
+    private Random rand;
 
     public UDPChannel(IProfile profile, int port) {
         this.profile = profile;
         this.port = port;
         messageReceivedListeners = new ArrayList<>();
+        newContactListeners = new ArrayList<>();
+        incomingQueue = new LinkedList<>();
         profileCache = new ProfileCache();
         listening = false;
         GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(IKey.class, new InterfaceAdapter<IKey>());
         this.gson = gsonBuilder.create();
+        this.rand = new Random();
     }
 
-    public void Listen() {
-        listening = true;
+    public void Listen(String channelName) {
+        this.channelName = channelName;
         listenThread = new Thread(new ListenThread(port));
+        listening = true;
         listenThread.start();
         //Start listening to messages, create event for receive trigger.
     }
 
-    public void addListener(MessageReceivedListener listener) {
+    public void addMessageListener(MessageReceivedListener listener) {
         messageReceivedListeners.add(listener);
     }
 
@@ -54,7 +63,15 @@ public class UDPChannel implements IUDPChannel {
      */
     private void MessageReceived(String messageType, IKey sender) {
         for(MessageReceivedListener listener : messageReceivedListeners) {
-            listener.MessageReceived(messageType, sender);
+            listener.MessageReceivedListener(messageType, sender);
+        }
+    }
+    //TODO: remove functions for listeners
+    public void AddContactListener(NewContactListener listener) { newContactListeners.add(listener); }
+
+    private void NewContactListener(IKey key) {
+        for(NewContactListener listener : newContactListeners) {
+            listener.NewContactListener(key);
         }
     }
 
@@ -79,15 +96,23 @@ public class UDPChannel implements IUDPChannel {
     }
 
     public void Send(IProfile profile, Object obj, Type type) throws IOException{
-        byte[] bytes = SerializePacket(obj, type).getBytes();
+        //Send(SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetUDPChannel()).getBytes());
+        byte[] bytes = SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetUDPChannel()).getBytes();
         DatagramSocket socket = new DatagramSocket();
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetUDPPort());
         socket.send(packet);
     }
+    /*
+    private void Send(byte[] bytes) throws IOException{
+        DatagramSocket socket = new DatagramSocket();
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetUDPPort());
+        socket.send(packet);
+    }
+    */
 
-    public String SerializePacket(Object obj, Type type) {
+    public String SerializePacket(Object obj, Type type, IKey key, String channelName) {
         String data = gson.toJson(obj, type);
-        UDPPacket packet = new UDPPacket(data, type.getTypeName(), profile.GetKey());
+        UDPPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
         return SerializePacket(packet);
     }
 
@@ -176,7 +201,6 @@ public class UDPChannel implements IUDPChannel {
         DatagramSocket socket;
         int port;
         public ListenThread(int port) {
-            incomingQueue = new LinkedList<>();
             this.port = port;
         }
 
@@ -193,9 +217,21 @@ public class UDPChannel implements IUDPChannel {
                         byte[] receivedData = receivedPacket.getData();
                         String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                         UDPPacket packet = DeserializePacket(serializedData);
-                        incomingQueue.add(packet);
-                        MessageReceived(packet.type, packet.sender);
-                        //TODO: If update from unknown player, add to cache.
+                        if(packet.channel.equals(channelName)) {
+                            incomingQueue.add(packet);
+
+                            /* Listeners require extra processing so are run in a separate thread
+                                to prevent ListenThread from being blocked */
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MessageReceived(packet.type, packet.sender);
+                                    //TODO: If update from unknown player, add to cache.
+                                    if(!profileCache.Contains(packet.sender))
+                                        NewContactListener(packet.sender);
+                                }
+                            }).start();
+                        }
                     } catch(IOException ioe) {
                         System.out.println("IOException");
                     }

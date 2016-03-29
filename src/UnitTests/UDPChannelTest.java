@@ -1,8 +1,12 @@
 package UnitTests;
 
+import P2PGL.Connection;
+import P2PGL.DHT.KademliaFacade;
+import P2PGL.Key;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
 import P2PGL.UDP.UDPChannel;
+import P2PGL.UDP.UDPPacket;
 import org.junit.Test;
 
 import java.net.DatagramPacket;
@@ -22,11 +26,11 @@ public class UDPChannelTest {
     public void testListen() throws Exception {
         String msg = "hello";
         CreateUDPChannel(5000);
-        udpChannel.Listen();
+        udpChannel.Listen("channel");
         //Thread.sleep(50);
         DatagramSocket serverSock = new DatagramSocket();
         //serverSock.connect(InetAddress.getLoopbackAddress(), 5000);
-        byte[] message = udpChannel.SerializePacket(msg, String.class).getBytes(); //msg.getBytes();
+        byte[] message = udpChannel.SerializePacket(msg, String.class, new Key(), "channel").getBytes(); //msg.getBytes();
         DatagramPacket packet = new DatagramPacket(message, message.length, InetAddress.getLoopbackAddress(), 5000);
         serverSock.send(packet);
         long time = System.currentTimeMillis();
@@ -52,9 +56,9 @@ public class UDPChannelTest {
     @Test
     public void testSend() throws Exception {
         CreateUDPChannel(5002);
-        IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_1");
-        UDPChannel serverUDP = new UDPChannel(prof, 5010);
-        serverUDP.Listen();
+        IProfile serverProfile = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_1");
+        UDPChannel serverUDP = new UDPChannel(serverProfile, 5010);
+        serverUDP.Listen("channel");
         //UDPChannel is profile port + 1 : profile must be set to 5009.
         Profile profile = new Profile(InetAddress.getLoopbackAddress(), 5009, "channel_0");
         udpChannel.Send(profile, "hi");
@@ -80,6 +84,7 @@ public class UDPChannelTest {
 
     private void CreateUDPChannel(int port) {
         IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_0");
+        prof.SetUDPChannel("channel");
         udpChannel = new UDPChannel(prof, port);
     }
 }

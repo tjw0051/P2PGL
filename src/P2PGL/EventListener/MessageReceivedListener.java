@@ -9,5 +9,5 @@ import java.net.InetAddress;
  * Created by t_j_w on 17/03/2016.
  */
 public interface MessageReceivedListener {
-    void MessageReceived(String messageType, IKey sender);
+    void MessageReceivedListener(String messageType, IKey sender);
 }

@@ -20,11 +20,14 @@ public class UDPPacket {
 
     public IKey sender;
 
+    public String channel;
+
     public UDPPacket() {}
 
-    public UDPPacket(String message, String type, IKey sender) {
+    public UDPPacket(String message, String type, IKey sender, String channel) {
         this.message = message;
         this.type = type;
         this.sender = sender;
+        this.channel = channel;
     }
 }

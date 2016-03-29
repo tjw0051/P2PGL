@@ -9,6 +9,7 @@ import kademlia.node.KademliaId;
 
 import org.junit.Test;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -57,6 +58,28 @@ public class ConnectionTest {
         } catch(Exception e) {
             fail();
         }
+    }
+
+    @Test
+    public void testUDPChannel() throws Exception {
+        Profile profile1 = new Profile(InetAddress.getLoopbackAddress(), 4001, 4002, "channel", "profile1", new Key());
+        Connection connection1 = new Connection(profile1, new KademliaFacade(profile1));
+        connection1.Connect();
+
+        Profile profile2 = new Profile(InetAddress.getLoopbackAddress(), 4003, 4004, "channel", "profile2", new Key());
+        Connection connection2 = new Connection(profile2, new KademliaFacade(profile2));
+        connection2.Connect("profile1", InetAddress.getLoopbackAddress(), 4001);
+
+        connection1.StartUDPChannel("channel");
+        connection2.StartUDPChannel("channel");
+        System.out.println("connection1 peers:");
+
+        connection1.Broadcast("Hello2");
+        connection2.Broadcast("Hello1");
+        Thread.sleep(100);
+        String message1 = (String) connection1.GetUDPChannel().ReadNext();
+        String message2 = (String) connection2.GetUDPChannel().ReadNext();
+        System.out.println("messg1: " + message1 + " | Messg2: " + message2);
     }
 
     @org.junit.Test

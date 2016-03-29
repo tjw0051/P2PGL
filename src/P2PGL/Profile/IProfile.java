@@ -26,6 +26,10 @@ public interface IProfile {
      */
     int GetUDPPort();
 
+    String GetUDPChannel();
+
+    void SetUDPChannel(String channelName);
+
     /**
      * @return  String  Get Key of profile owner.
      */
