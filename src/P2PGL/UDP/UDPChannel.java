@@ -59,12 +59,19 @@ public class UDPChannel implements IUDPChannel {
     }
 
     /** Called when listener Thread receives a new message.
-     * @param messageType   Serialized JSON message received.
+     * @param packet   Serialized JSON message received.
      */
-    private void MessageReceived(String messageType, IKey sender) {
-        for(MessageReceivedListener listener : messageReceivedListeners) {
-            listener.MessageReceivedListener(messageType, sender);
+    private void MessageReceived(UDPPacket packet) {
+        try {
+            Class C = Class.forName(packet.type);
+            Object obj = gson.fromJson(packet.message, C);
+
+            for(MessageReceivedListener listener : messageReceivedListeners) {
+                listener.MessageReceivedListener(obj, C, packet.sender);
+            }
+        } catch (ClassNotFoundException cnfe) {
         }
+
     }
     //TODO: remove functions for listeners
     public void AddContactListener(NewContactListener listener) { newContactListeners.add(listener); }
@@ -225,7 +232,7 @@ public class UDPChannel implements IUDPChannel {
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    MessageReceived(packet.type, packet.sender);
+                                    MessageReceived(packet);
                                     //TODO: If update from unknown player, add to cache.
                                     if(!profileCache.Contains(packet.sender))
                                         NewContactListener(packet.sender);

@@ -1,6 +1,7 @@
 package P2PGL;
 
 import P2PGL.DHT.IDHTFacade;
+import P2PGL.DHT.ISerializedData;
 import P2PGL.DHT.KademliaFacade;
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.EventListener.NewContactListener;
@@ -116,10 +117,18 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     public void Broadcast(String message) throws IOException{
         udpChannel.Broadcast(message);
     }
-
+    /*
     @Nullable
     public String Get(IKey key) throws IOException {
         return dht.Get(key);
+    }
+    */
+    @Nullable
+    public <T> T Get(IKey key, Type type) throws IOException, ClassNotFoundException {
+        ISerializedData serializedData = dht.Get(key, type.getTypeName());
+        if(serializedData == null)
+            return null;
+        return gson.fromJson(serializedData.GetData(), (Type)Class.forName(serializedData.GetType()));
     }
 
     /**
@@ -132,7 +141,11 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     public void Store(IKey destKey, String stringData) throws IOException{
         //Data data = new Data(node.getNode().getNodeId().toString(), new KademliaId(Key.Format(destKey)), stringData, "String");
         //Store(data);
-        dht.Store(destKey, stringData);
+        dht.Store(destKey, stringData, String.class.getTypeName());
+    }
+
+    public void Store(IKey destKey, Object obj, Type type) throws IOException{
+        dht.Store(destKey, gson.toJson(obj, type), type.getTypeName());
     }
 
      /**
@@ -144,7 +157,7 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     public IKey StoreProfile() throws IOException {
         //TODO: incremennt Key
         IKey profileKey = profile.GetKey().Next();
-        dht.Store(profileKey, gson.toJson(profile, profile.GetType()));
+        dht.Store(profileKey, gson.toJson(profile, profile.GetType()), profile.getClass().getTypeName());
         return profileKey;
     }
 
@@ -152,8 +165,6 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     public IKey[] ListUsers() {
         return dht.ListUsers();
     }
-
-
 
     public IKey GetId() {
         return dht.GetId();
@@ -175,16 +186,21 @@ public class Connection implements NewContactListener, MessageReceivedListener{
      * @throws IOException  Thrown if a get operation cannot be performed (check connection).
      */
     @Nullable
-    public IProfile GetProfile(IKey userKey) throws IOException {
+    public IProfile GetProfile(IKey userKey) throws IOException { //TODO: handle classnotfoundexception
         //KademliaId profileKey = IncrementKey(userKey.kademliaId);
         //String profileJson = Get(profileKey);
-        String profileJson = Get(userKey.Next());
-        if(profileJson == null)
+        try {
+            //String profileJson = Get(userKey.Next());
+            IProfile prof = Get(userKey.Next(), profile.GetType());
+            if(prof == null)
+                return null;
+            return prof;
+        } catch(ClassNotFoundException cnfe) {
             return null;
-        return gson.fromJson(profileJson, profile.GetType());
+        }
     }
 
-    public List<IProfile> GetProfiles(IKey[] keys) throws IOException{
+    public List<IProfile> GetProfiles(IKey[] keys) throws IOException {
         List<IProfile> profiles = new ArrayList<IProfile>();
         for(int i = 0; i < keys.length; i++) {
             try {
@@ -205,7 +221,6 @@ public class Connection implements NewContactListener, MessageReceivedListener{
         try {
             udpChannel.Add(GetProfile(key));
         } catch (IOException ioe) {
-
         }
     }
 
@@ -214,9 +229,9 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     }
 
     @Override
-    public void MessageReceivedListener(String messageType, IKey sender) {
+    public void MessageReceivedListener(Object obj, Class messageType, IKey sender) {
         for(MessageReceivedListener listener : messageReceivedListeners)
-            listener.MessageReceivedListener(messageType, sender);
+            listener.MessageReceivedListener(obj, messageType, sender);
     }
 
     public UDPChannel GetUDPChannel() { return udpChannel; }

@@ -61,18 +61,18 @@ public class KademliaFacade implements IDHTFacade {
     }
 
     @Override
-    public void Store(IKey key, String data) throws IOException{
-        Data kadData = new Data(node.getNode().getNodeId().toString(), new KademliaId(key.ToBytes()), data, "String");
+    public void Store(IKey key, String data, String type) throws IOException{
+        Data kadData = new Data(node.getNode().getNodeId().toString(), new KademliaId(key.ToBytes()), data, type);
         node.put(kadData);
     }
 
     @Override
-    public String Get(IKey key) throws IOException {
-        GetParameter getParameter = new GetParameter(new KademliaId(key.ToBytes()), "String");
+    public ISerializedData Get(IKey key, String type) throws IOException {
+        GetParameter getParameter = new GetParameter(new KademliaId(key.ToBytes()), type);
         try {
             KademliaStorageEntry entry = node.get(getParameter);
             Data data = (new Data()).fromSerializedForm(entry.getContent());
-            return data.getData();
+            return new SerializedData(data.getData(), data.getType());
         } catch(kademlia.exceptions.ContentNotFoundException notFoundE) {
             //TODO: Handle exception - custom P2PGL exception to wrap kademlia exception
             //System.out.println("Content not found");

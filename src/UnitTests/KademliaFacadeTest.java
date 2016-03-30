@@ -79,7 +79,7 @@ public class KademliaFacadeTest {
      */
     private void Store() {
         try {
-            clientKad.Store(new Key("testdata"), "hello");
+            clientKad.Store(new Key("testdata"), "hello", String.class.getTypeName());
         } catch (IOException ioe) {
             fail("IO Error storing data");
         }
@@ -93,7 +93,7 @@ public class KademliaFacadeTest {
         Connect(4306, 4307);
         Store();
         try {
-            String data = clientKad.Get(new Key("testdata"));
+            String data = clientKad.Get(new Key("testdata"), String.class.getTypeName()).GetData();
             assertTrue(data.equals("hello"));
         } catch (IOException ioe) {
             fail("Error getting data");

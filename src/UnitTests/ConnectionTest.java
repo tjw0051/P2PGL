@@ -88,7 +88,7 @@ public class ConnectionTest {
             Connect(4454, 4455);
             //connection.Store("newKey00000000000000", "hello");
             connection.Store(new Key("newKey00000000000000"), "hello");
-            String data = connection.Get(new Key("newKey00000000000000"));
+            String data = connection.Get(new Key("newKey00000000000000"), String.class);
             assertEquals(data, "hello");
         } catch(Exception e) {
             fail();

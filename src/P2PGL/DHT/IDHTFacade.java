@@ -18,9 +18,9 @@ public interface IDHTFacade {
     void Connect(String serverName, InetAddress serverAddress, int serverPort) throws IOException;
     boolean isConnected();
     void Disconnect() throws IOException;
-    void Store(IKey key, String data) throws IOException;
+    void Store(IKey key, String data, String type) throws IOException;
     //TODO: Use IKey for keys instead of strings.
-    String Get(IKey key) throws IOException;
+    ISerializedData Get(IKey key, String type) throws IOException;
     IKey[] ListUsers();
     IKey GetId();
 }
