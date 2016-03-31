@@ -1,9 +1,6 @@
 package P2PGL.EventListener;
 
-import P2PGL.IKey;
-import P2PGL.UDP.UDPPacket;
-
-import java.net.InetAddress;
+import P2PGL.Util.IKey;
 
 /**
  * Listener for reporting when a new message has been received.

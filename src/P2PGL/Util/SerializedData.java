@@ -1,6 +1,4 @@
-package P2PGL.DHT;
-
-import com.sun.media.jfxmedia.events.PlayerStateEvent;
+package P2PGL.Util;
 
 /**
  * Object for storing data-key pair.

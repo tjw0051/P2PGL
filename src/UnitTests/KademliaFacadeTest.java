@@ -1,16 +1,13 @@
 package UnitTests;
 
-import P2PGL.Connection;
 import P2PGL.DHT.KademliaFacade;
-import P2PGL.IKey;
-import P2PGL.Key;
+import P2PGL.Util.IKey;
+import P2PGL.Util.Key;
 import P2PGL.Profile.Profile;
-import kademlia.KadServer;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Arrays;
 
 import static org.junit.Assert.*;
 

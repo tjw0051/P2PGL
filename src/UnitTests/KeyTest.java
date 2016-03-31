@@ -1,6 +1,6 @@
 package UnitTests;
 
-import P2PGL.Key;
+import P2PGL.Util.Key;
 import kademlia.node.KademliaId;
 import org.junit.Test;
 
@@ -14,15 +14,15 @@ public class KeyTest {
     @Test
     public void testGetKademliaId() throws Exception {
         KademliaId kadId = new KademliaId();
-        Key key = new Key(kadId);
-        assertTrue(key.getKademliaId() != null);
+        Key key = new Key(kadId.getBytes());
+        assertTrue(new KademliaId(key.ToBytes()) != null);
     }
 
     @Test
     public void testToString() throws Exception {
         KademliaId kadId = new KademliaId();
-        Key key = new Key(kadId);
-        assertTrue(key.getKademliaId().toString().equals(kadId.toString()));
+        Key key = new Key(kadId.getBytes());
+        assertTrue(new KademliaId(key.ToBytes()).toString().equals(kadId.toString()));
     }
 
     @org.junit.Test

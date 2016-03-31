@@ -1,14 +1,12 @@
 package UnitTests;
 
-import P2PGL.Connection;
-import P2PGL.DHT.KademliaFacade;
-import P2PGL.Key;
+import P2PGL.Util.Key;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
 import P2PGL.UDP.UDPChannel;
-import P2PGL.UDP.UDPPacket;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -54,20 +52,35 @@ public class UDPChannelTest {
     }
 
     @Test
-    public void testSend() throws Exception {
+    public void testSend() {
         CreateUDPChannel(5002);
         IProfile serverProfile = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_1");
         UDPChannel serverUDP = new UDPChannel(serverProfile, 5010);
         serverUDP.Listen("channel");
         //UDPChannel is profile port + 1 : profile must be set to 5009.
         Profile profile = new Profile(InetAddress.getLoopbackAddress(), 5009, "channel_0");
-        udpChannel.Send(profile, "hi");
+        try {
+            udpChannel.Send(profile, "hi");
+        } catch (IOException ioe) {
+            fail("Error sending message");
+        }
         //Thread.sleep(50);
-        String message = serverUDP.ReadNext();
+        String message = "";
+        try {
+            message = serverUDP.ReadNext();
+        } catch (ClassNotFoundException cnfe) {
+            fail("Error deserializing message");
+        }
         long time = System.currentTimeMillis();
         while(System.currentTimeMillis() - time < 5000 && message == null) {
-            udpChannel.Send(profile, "hi");
-            message = serverUDP.ReadNext();
+            try {
+                udpChannel.Send(profile, "hi");
+                message = serverUDP.ReadNext();
+            } catch (IOException ioe) {
+                fail("Error sending message");
+            } catch (ClassNotFoundException cnfe) {
+                fail("Error deserializing message");
+            }
         }
         assertTrue(message.equals("hi"));
     }
@@ -84,7 +97,7 @@ public class UDPChannelTest {
 
     private void CreateUDPChannel(int port) {
         IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 5010, "channel_0");
-        prof.SetUDPChannel("channel");
+        prof.SetLocalChannel("channel");
         udpChannel = new UDPChannel(prof, port);
     }
 }

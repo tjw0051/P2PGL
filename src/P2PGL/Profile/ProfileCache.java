@@ -1,8 +1,6 @@
 package P2PGL.Profile;
 
-import P2PGL.IKey;
-import P2PGL.Profile.IProfile;
-import P2PGL.Profile.IProfileCache;
+import P2PGL.Util.IKey;
 
 import java.util.*;
 
@@ -62,7 +60,7 @@ public class ProfileCache implements IProfileCache {
     }
 
     /**
-     * Get IProfile from cache by name.
+     * GetHybridConnection IProfile from cache by name.
      *
      * @param name  Name of profile.
      *
@@ -118,7 +116,7 @@ public class ProfileCache implements IProfileCache {
     }
 
     /**
-     * Get the current time.
+     * GetHybridConnection the current time.
      *
      * @return Current time in milliseconds.
      */

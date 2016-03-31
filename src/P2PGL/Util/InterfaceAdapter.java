@@ -1,11 +1,15 @@
-package P2PGL;
+package P2PGL.Util;
 
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 
 /**
- * Created by t_j_w on 24/03/2016.
+ * Serialization of Interfaces Method
+ * Source: Stack Overflow
+ * URL: http://stackoverflow.com/a/9550086/6136287
+ * @author Maciek Makowski
+ * Obtained: 23/02/2016
  */
 final public class InterfaceAdapter<T> implements JsonSerializer<T>, JsonDeserializer<T> {
     public JsonElement serialize(T object, Type interfaceType, JsonSerializationContext context) {

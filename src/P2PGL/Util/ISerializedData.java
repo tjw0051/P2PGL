@@ -1,4 +1,4 @@
-package P2PGL.DHT;
+package P2PGL.Util;
 
 /**
  * Struct-like class for storing serialized String data and type name pair.

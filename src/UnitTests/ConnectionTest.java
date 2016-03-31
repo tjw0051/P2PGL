@@ -1,10 +1,13 @@
 package UnitTests;
 
-import P2PGL.*;
+import P2PGL.Connection.HybridConnection;
+import P2PGL.Connection.IHybridConnection;
 import P2PGL.DHT.KademliaFacade;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
 import P2PGL.UDP.UDPChannel;
+import P2PGL.Util.IKey;
+import P2PGL.Util.Key;
 import kademlia.JKademliaNode;
 import kademlia.node.KademliaId;
 
@@ -21,7 +24,7 @@ import static org.junit.Assert.*;
  */
 public class ConnectionTest {
     JKademliaNode server;
-    Connection connection;
+    IHybridConnection connection;
     Profile _profile;
 
     @org.junit.Test
@@ -38,7 +41,7 @@ public class ConnectionTest {
     public void testIncrementKey() throws Exception {
         KademliaId kadId = new KademliaId("hello000000000000000");
         String idString = kadId.toString(); // 68656C6C6F303030303030303030303030303030
-        //KademliaId incrKadId = Connection.IncrementKey(kadId);
+        //KademliaId incrKadId = HybridConnection.IncrementKey(kadId);
 
         String incrIdString = incrKadId.toString();
         assertEquals(incrIdString, "68656C6C6F303030303030303030303030303031");
@@ -46,7 +49,7 @@ public class ConnectionTest {
     */
     private void CreateConnection(int port) {
         _profile = new Profile(java.net.InetAddress.getLoopbackAddress(), port, "key");
-        connection = new Connection(_profile, new KademliaFacade(), new UDPChannel(_profile));
+        connection = new HybridConnection(_profile, new KademliaFacade(), new UDPChannel(_profile));
     }
 
     private void Connect(int clientPort, int serverPort) throws Exception {
@@ -64,22 +67,22 @@ public class ConnectionTest {
     @Test
     public void testUDPChannel() throws Exception {
         Profile profile1 = new Profile(InetAddress.getLoopbackAddress(), 4001, 4002, "channel", "profile1", new Key());
-        Connection connection1 = new Connection(profile1, new KademliaFacade(profile1), new UDPChannel(profile1));
+        IHybridConnection connection1 = new HybridConnection(profile1, new KademliaFacade(profile1), new UDPChannel(profile1));
         connection1.Connect();
 
         Profile profile2 = new Profile(InetAddress.getLoopbackAddress(), 4003, 4004, "channel", "profile2", new Key());
-        Connection connection2 = new Connection(profile2, new KademliaFacade(profile2), new UDPChannel(profile2));
+        IHybridConnection connection2 = new HybridConnection(profile2, new KademliaFacade(profile2), new UDPChannel(profile2));
         connection2.Connect("profile1", InetAddress.getLoopbackAddress(), 4001);
 
-        connection1.StartUDPChannel("channel");
-        connection2.StartUDPChannel("channel");
+        connection1.JoinLocalChannel("channel");
+        connection2.JoinLocalChannel("channel");
         System.out.println("connection1 peers:");
 
-        connection1.Broadcast("Hello2");
-        connection2.Broadcast("Hello1");
+        connection1.Broadcast("Hello2", String.class);
+        connection2.Broadcast("Hello1", String.class);
         Thread.sleep(100);
-        String message1 = (String) connection1.GetUDPChannel().ReadNext();
-        String message2 = (String) connection2.GetUDPChannel().ReadNext();
+        String message1 = (String) connection1.GetLocalChannel().ReadNext();
+        String message2 = (String) connection2.GetLocalChannel().ReadNext();
         System.out.println("messg1: " + message1 + " | Messg2: " + message2);
     }
 
@@ -88,7 +91,7 @@ public class ConnectionTest {
         try {
             Connect(4454, 4455);
             //connection.Store("newKey00000000000000", "hello");
-            connection.Store(new Key("newKey00000000000000"), "hello");
+            connection.Store(new Key("newKey00000000000000"), "hello", String.class);
             String data = connection.Get(new Key("newKey00000000000000"), String.class);
             assertEquals(data, "hello");
         } catch(Exception e) {
@@ -110,7 +113,7 @@ public class ConnectionTest {
     public void testStore() throws Exception {
         try {
             Connect(4444, 4445);
-            connection.Store(new Key("newKey00000000000000"), "hello");
+            connection.Store(new Key("newKey00000000000000"), "hello", String.class);
         } catch(Exception e) {
             fail();
         }
@@ -120,7 +123,7 @@ public class ConnectionTest {
     public void testStoreProfile() throws Exception {
         try {
             Connect(4450, 4451);
-            connection.StoreProfile();
+            //connection.StoreProfile();
         } catch (Exception e) {
             fail();
         }
@@ -132,8 +135,8 @@ public class ConnectionTest {
         Connect(4446, 4447);
         IKey[] users = connection.ListUsers();
         List<IKey> userList = Arrays.asList(users);
-        IKey clientId = connection.GetId();
-        Key serverId = new Key(server.getNode().getNodeId());
+        IKey clientId = connection.GetKey();
+        Key serverId = new Key(server.getNode().getNodeId().getBytes());
 
         assertTrue(userList.size() == 2);
     }
@@ -141,7 +144,7 @@ public class ConnectionTest {
     @Test
     public void testGetId() throws Exception {
         Connect(4448, 4449);
-        String id = connection.GetId().toString();
+        String id = connection.GetKey().toString();
         assertTrue(id != null);
     }
 
@@ -149,7 +152,6 @@ public class ConnectionTest {
     public void testGetProfile() throws Exception {
         try {
             Connect(4452, 4453);
-            IKey profKey = connection.StoreProfile();
             Thread.sleep(200);
             //IProfile localProfile = connection.GetLocalProfile();
             IProfile prof = connection.GetProfile(_profile.GetKey());

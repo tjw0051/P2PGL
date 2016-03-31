@@ -1,4 +1,4 @@
-package P2PGL;
+package P2PGL.Util;
 
 /**
  * Created by t_j_w on 24/03/2016.

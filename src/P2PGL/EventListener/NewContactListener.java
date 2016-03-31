@@ -1,6 +1,6 @@
 package P2PGL.EventListener;
 
-import P2PGL.IKey;
+import P2PGL.Util.IKey;
 
 /**
  * Listener for when a message has been received by an unknown contact.

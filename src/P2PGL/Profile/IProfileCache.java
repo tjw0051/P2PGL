@@ -1,7 +1,6 @@
 package P2PGL.Profile;
 
-import P2PGL.IKey;
-import P2PGL.Profile.IProfile;
+import P2PGL.Util.IKey;
 
 import java.util.Collection;
 
@@ -19,13 +18,13 @@ public interface IProfileCache {
      */
     void Add(IProfile[] profiles);
 
-    /** Get first profile of matching name
+    /** GetHybridConnection first profile of matching name
      * @param name  Name of profile to retrieve.
      * @return  IProfile of contact. Returns null if no profile can be found.
      */
     IProfile Get(String name);
 
-    /** Get all contacts stored in cache.
+    /** GetHybridConnection all contacts stored in cache.
      * @return  Collection of IProfiles
      */
     Collection<IProfile> Get();

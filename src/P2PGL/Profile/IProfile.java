@@ -1,8 +1,6 @@
 package P2PGL.Profile;
 
-import P2PGL.IKey;
-import kademlia.dht.KadContent;
-import kademlia.node.KademliaId;
+import P2PGL.Util.IKey;
 
 import java.lang.reflect.Type;
 import java.net.InetAddress;
@@ -12,7 +10,7 @@ import java.net.InetAddress;
  */
 public interface IProfile {
     /**
-     * @return  InetAddress Get IP address of profile owner.
+     * @return  InetAddress GetHybridConnection IP address of profile owner.
      */
     InetAddress GetIPAddress();
 
@@ -24,17 +22,26 @@ public interface IProfile {
     /**
      * @return int  UDP Port of profile owner.
      */
-    int GetUDPPort();
-
-    String GetUDPChannel();
-
-    void SetUDPChannel(String channelName);
+    int GetLocalChannelPort();
 
     /**
-     * @return  String  Get Key of profile owner.
+     * @return  String name of local channel
+     */
+    String GetLocalChannelName();
+
+    /** Set the local channel name
+     * @param channelName   Name of channel
+     */
+    void SetLocalChannel(String channelName);
+
+    /**
+     * @return  String  GetHybridConnection Key of profile owner.
      */
     IKey GetKey();
 
+    /**
+     * @return  Name of profile owner
+     */
     String GetName();
 
     /**

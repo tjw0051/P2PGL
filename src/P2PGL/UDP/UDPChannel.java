@@ -2,8 +2,9 @@ package P2PGL.UDP;
 
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.EventListener.NewContactListener;
-import P2PGL.IKey;
-import P2PGL.InterfaceAdapter;
+import P2PGL.Util.IKey;
+import P2PGL.Util.InterfaceAdapter;
+import P2PGL.ConnectionFactory;
 import P2PGL.Profile.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -19,7 +20,7 @@ import java.util.*;
  * A communication channel that broadcasts messages to all users
  * in the channel.
  */
-public class UDPChannel implements IUDPChannel {
+public class UDPChannel implements ILocalChannel {
     private int port;
     private String channelName;
     private Queue<UDPPacket> incomingQueue;
@@ -32,23 +33,33 @@ public class UDPChannel implements IUDPChannel {
     private IProfile profile;
     private Random rand;
 
+    /** Create a new UDP channel on port in profile.GetLocalChannelPort.
+     * @param profile
+     */
     public UDPChannel(IProfile profile) {
-        this(profile, profile.GetUDPPort());
-        this.profile = profile;
-        this.port = profile.GetUDPPort();
+        this(profile, profile.GetLocalChannelPort());
     }
 
+    /** Create a UDP channel on the defined port.
+     * @param profile   Profile of this node
+     * @param port  Port to listen to incoming messsages
+     */
     public UDPChannel(IProfile profile, int port) {
+        this.profile = profile;
+        this.port = port;
         messageReceivedListeners = new ArrayList<>();
         newContactListeners = new ArrayList<>();
         incomingQueue = new LinkedList<>();
-        profileCache = new ProfileCache();
+        profileCache = ConnectionFactory.GetProfileCache();
         listening = false;
         GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(IKey.class, new InterfaceAdapter<IKey>());
         this.gson = gsonBuilder.create();
         this.rand = new Random();
     }
 
+    /** Start listening to incoming messages
+     * @param channelName   Channel name to listen on
+     */
     public void Listen(String channelName) {
         this.channelName = channelName;
         listenThread = new Thread(new ListenThread(port));
@@ -57,10 +68,16 @@ public class UDPChannel implements IUDPChannel {
         //Start listening to messages, create event for receive trigger.
     }
 
+    /** Add a listener to be informed when a message is received.
+     * @param listener  Class implementing MessageReceivedListener
+     */
     public void AddMessageListener(MessageReceivedListener listener) {
         messageReceivedListeners.add(listener);
     }
 
+    /** Remove message listener
+     * @param listener  Listener to remove
+     */
     public void RemoveMessageListener(MessageReceivedListener listener) { messageReceivedListeners.remove(listener); }
 
     /** Called when listener Thread receives a new message.
@@ -78,11 +95,21 @@ public class UDPChannel implements IUDPChannel {
         }
 
     }
-    //TODO: remove functions for listeners
+
+    /** Add a listener to be informed when a message is received from an unknown key.
+     * @param listener  Class implementing NewContactListener
+     */
     public void AddContactListener(NewContactListener listener) { newContactListeners.add(listener); }
 
+    /** Remove contact listener
+     * @param listener listener to remove
+     */
     public void RemoveContactListener(NewContactListener listener) { newContactListeners.remove(listener); }
 
+
+    /** Calls NewContactListeners when a message is received from an unknown contact.
+     * @param key
+     */
     private void NewContactListener(IKey key) {
         for(NewContactListener listener : newContactListeners) {
             listener.NewContactListener(key);
@@ -97,43 +124,52 @@ public class UDPChannel implements IUDPChannel {
         profileCache.Add(profile);
     }
 
-    public boolean Contains(IKey user) {
-        return profileCache.Contains(user);
-    }
-
+    /**
+     * Clear contacts in channel
+     */
     public void ClearContacts() {
         profileCache.Clear();
     }
 
-    public void Send(IProfile profile, String message) throws IOException{
-        Send(profile, message, String.class);
-    }
-
+    /** Send a message to a single peer
+     * @param profile   Profile of peer to send message to
+     * @param obj   Object to send
+     * @param type  Type of object
+     * @throws IOException  Error sending message to peer
+     */
     public void Send(IProfile profile, Object obj, Type type) throws IOException{
-        //Send(SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetUDPChannel()).getBytes());
-        byte[] bytes = SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetUDPChannel()).getBytes();
+        //Send(SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName()).getBytes());
+        byte[] bytes = SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName()).getBytes();
         DatagramSocket socket = new DatagramSocket();
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetUDPPort());
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetLocalChannelPort());
         socket.send(packet);
     }
-    /*
-    private void Send(byte[] bytes) throws IOException{
-        DatagramSocket socket = new DatagramSocket();
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetUDPPort());
-        socket.send(packet);
-    }
-    */
 
-    public String SerializePacket(Object obj, Type type, IKey key, String channelName) {
+    /** Serialize data and store in Json serialized UDP packet
+     * @param obj   Object to serialize
+     * @param type  Type of object
+     * @param key   Key of sender (this)
+     * @param channelName   Channel name message is sent on.
+     * @return  Json serialized UDP packet.
+     */
+    private String SerializePacket(Object obj, Type type, IKey key, String channelName) {
         String data = gson.toJson(obj, type);
         UDPPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
         return SerializePacket(packet);
     }
 
-    public String SerializePacket(UDPPacket packet) {
+    /** Serialize UDP Packet to Json
+     * @param packet    packet to serialize
+     * @return
+     */
+    private String SerializePacket(UDPPacket packet) {
         return gson.toJson(packet, UDPPacket.class);
     }
 
+    /** Deserialize UDP Packet
+     * @param ser   Json UDP Packet
+     * @return  UDPPacket Object
+     */
     public UDPPacket DeserializePacket(String ser) {
         return gson.fromJson(ser, UDPPacket.class);
     }
@@ -156,37 +192,16 @@ public class UDPChannel implements IUDPChannel {
         }
     }
 
-    public void Broadcast(String message) throws IOException{
-        Broadcast(message, String.class);
-    }
-
-    /** Read next UDPPacket in queue and remove it.
-     * @return
-     */
-    public UDPPacket ReadNextPacket() {
-        if(!incomingQueue.isEmpty())
-            return incomingQueue.remove();
-        else
-            return null;
-    }
-
-    /** Read next object in queue and remove it.
-     * @param <T>
-     * @return
-     * @throws ClassNotFoundException
+    /** Read next message in incoming message queue and remove it from the queue
+     * @param <T>   Type of object
+     * @return  Deserialized object
+     * @throws ClassNotFoundException   Class cannot be found to deserialize message.
      */
     public  <T> T ReadNext() throws ClassNotFoundException {
         if(incomingQueue.isEmpty())
             return null;
         UDPPacket packet = incomingQueue.remove();
         return gson.fromJson(packet.message, (Type)Class.forName(packet.type));
-    }
-
-    /** Read next UDPPacket in the queue without removing it.
-     * @return
-     */
-    public UDPPacket PeekNextPacket() {
-        return incomingQueue.peek();
     }
 
     /** Read next object in the queue without removing it.
@@ -199,6 +214,9 @@ public class UDPChannel implements IUDPChannel {
         return gson.fromJson(packet.message, (Type)Class.forName(packet.type));
     }
 
+    /**
+     * Clear incoming messages queue.
+     */
     public void ClearQueue() {
         incomingQueue.clear();
     }
@@ -222,7 +240,6 @@ public class UDPChannel implements IUDPChannel {
                 while(listening) {
                     try {
                         socket.receive(receivedPacket);
-                        System.out.println("Message received");
                         byte[] receivedData = receivedPacket.getData();
                         String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                         UDPPacket packet = DeserializePacket(serializedData);
@@ -230,7 +247,7 @@ public class UDPChannel implements IUDPChannel {
                             incomingQueue.add(packet);
 
                             /* Listeners require extra processing so are run in a separate thread
-                                to prevent ListenThread from being blocked */
+                                to prevent ListenThread from blocking */
                             new Thread(new Runnable() {
                                 @Override
                                 public void run() {
@@ -256,6 +273,9 @@ public class UDPChannel implements IUDPChannel {
         }
     }
 
+    /**
+     * Stop listening to incoming messages
+     */
     public void Stop() {
         listening = false;
     }

@@ -1,7 +1,7 @@
 package UnitTests;
 
-import P2PGL.IKey;
-import P2PGL.Key;
+import P2PGL.Util.IKey;
+import P2PGL.Util.Key;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
 import P2PGL.Profile.ProfileCache;

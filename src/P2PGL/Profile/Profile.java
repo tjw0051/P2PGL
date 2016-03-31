@@ -1,12 +1,10 @@
 package P2PGL.Profile;
 
-import P2PGL.IKey;
-import P2PGL.Key;
+import P2PGL.Util.IKey;
+import P2PGL.ConnectionFactory;
 
 import java.lang.reflect.Type;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Minimal implementation of IProfile.
@@ -16,7 +14,7 @@ public class Profile implements IProfile {
     InetAddress address;
     int port;
     int udpPort;
-    String udpChannel;
+    String localChannel;
     String name;
     IKey key;
 
@@ -24,15 +22,15 @@ public class Profile implements IProfile {
      * @param address   Address of profile owner
      * @param port  Port of profile owner
      * @param udpPort   UDP Port of profile owner
-     * @param udpChannel    Name of UDP Channel that profile owner is a member of
+     * @param localChannel    Name of UDP Channel that profile owner is a member of
      * @param name  Name of Profile owner
      * @param key   Key of profile owner
      */
-    public Profile(InetAddress address, int port, int udpPort, String udpChannel, String name, IKey key) {
+    public Profile(InetAddress address, int port, int udpPort, String localChannel, String name, IKey key) {
         this.address = address;
         this.port = port;
         this.udpPort = udpPort;
-        this.udpChannel = udpChannel;
+        this.localChannel = localChannel;
         this.name = name;
         this.key = key;
     }
@@ -53,7 +51,7 @@ public class Profile implements IProfile {
      * @param name  Name of Profile owner
      */
     public Profile(InetAddress address, int port, String name) {
-        this(address, port, port+1, null, name, new Key());
+        this(address, port, port+1, null, name, ConnectionFactory.GetKey());
     }
 
     /**
@@ -69,17 +67,17 @@ public class Profile implements IProfile {
     /**
      * @return UDP Port of profile owner. Default is port + 1 unless specified.
      */
-    public int GetUDPPort() { return udpPort; }
+    public int GetLocalChannelPort() { return udpPort; }
 
     /**
-     * @return Get UDP Channel name that profile owner is a member of.
+     * @return GetHybridConnection UDP Channel name that profile owner is a member of.
      */
-    public String GetUDPChannel() { return udpChannel; }
+    public String GetLocalChannelName() { return localChannel; }
 
     /**
      * @param udpChannel    Set UDP Channel name.
      */
-    public void SetUDPChannel(String udpChannel) { this.udpChannel = udpChannel; }
+    public void SetLocalChannel(String udpChannel) { this.localChannel = udpChannel; }
 
     /**
      * @return  Name of profile owner.

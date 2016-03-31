@@ -1,4 +1,4 @@
-package P2PGL;
+package P2PGL.Util;
 
 import kademlia.node.KademliaId;
 
@@ -14,16 +14,12 @@ public class Key implements IKey {
         kademliaId = new KademliaId();
     }
 
-    public Key(KademliaId kademliaId) {
-        this.kademliaId = kademliaId;
+    public Key(byte[] bytes) {
+        this.kademliaId = new KademliaId(bytes);
     }
 
     public Key(String key) {
         this.kademliaId = new KademliaId(Format(key));
-    }
-
-    public KademliaId getKademliaId() {
-        return kademliaId;
     }
 
     public String toString() {
@@ -47,7 +43,7 @@ public class Key implements IKey {
     public IKey Next() {
         byte[] bytes = Arrays.copyOf(kademliaId.getBytes(), kademliaId.getBytes().length);
         bytes[bytes.length - 1]++;
-        return new Key(new KademliaId(bytes));
+        return new Key(bytes);
     }
 
     public byte[] ToBytes() {

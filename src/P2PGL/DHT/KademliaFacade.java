@@ -3,6 +3,8 @@ package P2PGL.DHT;
 import P2PGL.*;
 import P2PGL.Exceptions.ContentNotFoundException;
 import P2PGL.Profile.IProfile;
+import P2PGL.Util.IKey;
+import P2PGL.Util.ISerializedData;
 import kademlia.JKademliaNode;
 import kademlia.dht.GetParameter;
 import kademlia.dht.KademliaStorageEntry;
@@ -14,7 +16,6 @@ import kademlia.routing.KademliaRoutingTable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 
 /**
  * Wrapper for Kademlia functions.
@@ -92,7 +93,7 @@ public class KademliaFacade implements IDHTFacade {
         node.put(kadData);
     }
 
-    /** Get data of Type type from DHT stored at IKey key.
+    /** GetHybridConnection data of Type type from DHT stored at IKey key.
      * @param key  Key that the data is stored under
      * @param type String type name of the data
      * @return
@@ -105,7 +106,8 @@ public class KademliaFacade implements IDHTFacade {
         try {
             KademliaStorageEntry entry = node.get(getParameter);
             Data data = (new Data()).fromSerializedForm(entry.getContent());
-            return new SerializedData(data.getData(), data.getType());
+            //return new SerializedData(data.getData(), data.getType());
+            return ConnectionFactory.GetSerializedData(data.getData(), data.getType());
         } catch(kademlia.exceptions.ContentNotFoundException notFoundE) {
             throw new ContentNotFoundException("Data at key: " + key.toString() + " could not be found.");
         }
@@ -119,19 +121,22 @@ public class KademliaFacade implements IDHTFacade {
         KademliaRoutingTable routingTable = node.getRoutingTable();
         List<Contact> routingContacts =  routingTable.getAllContacts();
         //String[] users = new String[routingContacts.size()];
-        IKey[] users = new Key[routingContacts.size()];
+        //IKey[] users = new Key[routingContacts.size()];
+        IKey[] users = ConnectionFactory.GetKeys(routingContacts.size());
         for(int i = 0; i < routingContacts.size(); i++) {
-            users[i] = new Key(routingContacts.get(i).getNode().getNodeId());
+            //users[i] = new Key(routingContacts.get(i).getNode().getNodeId().getBytes());
+            users[i] = ConnectionFactory.GetKey(routingContacts.get(i).getNode().getNodeId().getBytes());
         }
         return users;
     }
 
-    /** Get the ID of this node
+    /** GetHybridConnection the ID of this node
      * @return  ID of node
      */
     @Override
     public IKey GetId() {
-        return new Key(node.getNode().getNodeId());
+        //return new Key(node.getNode().getNodeId().getBytes());
+        return ConnectionFactory.GetKey(node.getNode().getNodeId().getBytes());
     }
 
     /** Extend or shorten a string to 20 characters - required by KademliaId node IDs.

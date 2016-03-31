@@ -1,9 +1,9 @@
 package P2PGL.DHT;
 
 import P2PGL.Exceptions.ContentNotFoundException;
-import P2PGL.IKey;
+import P2PGL.Util.IKey;
 import P2PGL.Profile.IProfile;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import P2PGL.Util.ISerializedData;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -52,7 +52,7 @@ public interface IDHTFacade {
      */
     void Store(IKey key, String data, String type) throws IOException;
 
-    /** Get data of Type type stored at key.
+    /** GetHybridConnection data of Type type stored at key.
      * @param key   Key that the data is stored under
      * @param type  String type name of the data
      * @return  The data in an ISerializedData object.
@@ -66,7 +66,7 @@ public interface IDHTFacade {
      */
     IKey[] ListUsers();
 
-    /** Get the ID of this node.
+    /** GetHybridConnection the ID of this node.
      * @return ID of node.
      */
     IKey GetId();
