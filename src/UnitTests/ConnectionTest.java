@@ -4,6 +4,7 @@ import P2PGL.*;
 import P2PGL.DHT.KademliaFacade;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
+import P2PGL.UDP.UDPChannel;
 import kademlia.JKademliaNode;
 import kademlia.node.KademliaId;
 
@@ -45,7 +46,7 @@ public class ConnectionTest {
     */
     private void CreateConnection(int port) {
         _profile = new Profile(java.net.InetAddress.getLoopbackAddress(), port, "key");
-        connection = new Connection(_profile, new KademliaFacade());
+        connection = new Connection(_profile, new KademliaFacade(), new UDPChannel(_profile));
     }
 
     private void Connect(int clientPort, int serverPort) throws Exception {
@@ -63,11 +64,11 @@ public class ConnectionTest {
     @Test
     public void testUDPChannel() throws Exception {
         Profile profile1 = new Profile(InetAddress.getLoopbackAddress(), 4001, 4002, "channel", "profile1", new Key());
-        Connection connection1 = new Connection(profile1, new KademliaFacade(profile1));
+        Connection connection1 = new Connection(profile1, new KademliaFacade(profile1), new UDPChannel(profile1));
         connection1.Connect();
 
         Profile profile2 = new Profile(InetAddress.getLoopbackAddress(), 4003, 4004, "channel", "profile2", new Key());
-        Connection connection2 = new Connection(profile2, new KademliaFacade(profile2));
+        Connection connection2 = new Connection(profile2, new KademliaFacade(profile2), new UDPChannel(profile2));
         connection2.Connect("profile1", InetAddress.getLoopbackAddress(), 4001);
 
         connection1.StartUDPChannel("channel");

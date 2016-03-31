@@ -1,6 +1,7 @@
 package P2PGL.DHT;
 
 import P2PGL.*;
+import P2PGL.Exceptions.ContentNotFoundException;
 import P2PGL.Profile.IProfile;
 import kademlia.JKademliaNode;
 import kademlia.dht.GetParameter;
@@ -31,6 +32,9 @@ public class KademliaFacade implements IDHTFacade {
         SetProfile(profile);
     }
 
+    /** Set the name, key and port for this node from an IProfile
+     * @param profile Profile containing connection details (port, name, key)
+     */
     @Override
     public void SetProfile(IProfile profile) {
         this.name = profile.GetName();
@@ -38,6 +42,12 @@ public class KademliaFacade implements IDHTFacade {
         this.port = profile.GetPort();
     }
 
+    /** Create Kademlia node and bootstrap to server with serverName, serverAddress, serverPort.
+     * @param serverName    Name of server
+     * @param serverAddress Address of server
+     * @param serverPort    Port of server
+     * @throws IOException
+     */
     @Override
     public void Connect(String serverName, InetAddress serverAddress, int serverPort) throws IOException{
         node = new JKademliaNode(name, key, port);
@@ -45,41 +55,65 @@ public class KademliaFacade implements IDHTFacade {
         node.bootstrap(bootstrapNode);
     }
 
+    /** Create a Kademlia node without bootstrapping to an existing network.
+     *  Can be used to create a bootstrap server.
+     * @throws IOException
+     */
     @Override
     public void Connect() throws IOException {
         node = new JKademliaNode(name, key, port);
     }
 
+    /** Check if the node is still running
+     * @return  True if node is running
+     */
     public boolean isConnected() {
         return node.getServer().isRunning();
     }
 
+    /** Shutdown Kademlia node
+     * @throws IOException  Error shutting down node.
+     */
     @Override
     public void Disconnect() throws IOException{
         node.shutdown(false);
         node = null;
     }
 
+    /** Store data on DHT at KademliaId(key.toBytes)
+     * @param key  Key the data is stored under
+     * @param data Serialized string data to be stored on dht.
+     * @param type Type of data.
+     * @throws IOException  Error storing data
+     */
     @Override
     public void Store(IKey key, String data, String type) throws IOException{
         Data kadData = new Data(node.getNode().getNodeId().toString(), new KademliaId(key.ToBytes()), data, type);
         node.put(kadData);
     }
 
+    /** Get data of Type type from DHT stored at IKey key.
+     * @param key  Key that the data is stored under
+     * @param type String type name of the data
+     * @return
+     * @throws IOException
+     * @throws ContentNotFoundException
+     */
     @Override
-    public ISerializedData Get(IKey key, String type) throws IOException {
+    public ISerializedData Get(IKey key, String type) throws IOException, ContentNotFoundException {
         GetParameter getParameter = new GetParameter(new KademliaId(key.ToBytes()), type);
         try {
             KademliaStorageEntry entry = node.get(getParameter);
             Data data = (new Data()).fromSerializedForm(entry.getContent());
             return new SerializedData(data.getData(), data.getType());
         } catch(kademlia.exceptions.ContentNotFoundException notFoundE) {
-            //TODO: Handle exception - custom P2PGL exception to wrap kademlia exception
-            //System.out.println("Content not found");
-            return null;
+            throw new ContentNotFoundException("Data at key: " + key.toString() + " could not be found.");
         }
     }
 
+    /** List users connected to DHT.
+     * @return  IKey[] array of users.
+     */
     @Override
     public IKey[] ListUsers() {
         KademliaRoutingTable routingTable = node.getRoutingTable();
@@ -92,11 +126,18 @@ public class KademliaFacade implements IDHTFacade {
         return users;
     }
 
+    /** Get the ID of this node
+     * @return  ID of node
+     */
     @Override
     public IKey GetId() {
         return new Key(node.getNode().getNodeId());
     }
 
+    /** Extend or shorten a string to 20 characters - required by KademliaId node IDs.
+     * @param key   String to be formatted.
+     * @return  Formatted string of 20 characters.
+     */
     public static String PadKey(String key) {
         if(key.length() > 20)
             throw new IllegalArgumentException("Key must be < 20 characters long");

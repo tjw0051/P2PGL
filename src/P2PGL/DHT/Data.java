@@ -8,7 +8,6 @@ import kademlia.node.KademliaId;
 /**
  *  Implementation of KadContent from Kademlia for storing data on the DHT.
  *  @see kademlia.dht.KadContent
- *  @author Thomas Walker
  */
 public class Data implements KadContent {
     private String type = "Data";

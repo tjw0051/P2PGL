@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.net.InetAddress;
 
 /**
- * Created by Tom.
+ * Descriptor for a node in the network.
  */
 public interface IProfile {
     /**

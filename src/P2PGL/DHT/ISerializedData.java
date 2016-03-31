@@ -1,7 +1,7 @@
 package P2PGL.DHT;
 
 /**
- * Created by t_j_w on 30/03/2016.
+ * Struct-like class for storing serialized String data and type name pair.
  */
 public interface ISerializedData {
     String GetData();

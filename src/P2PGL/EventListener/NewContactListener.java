@@ -3,8 +3,11 @@ package P2PGL.EventListener;
 import P2PGL.IKey;
 
 /**
- * Created by t_j_w on 29/03/2016.
+ * Listener for when a message has been received by an unknown contact.
  */
 public interface NewContactListener {
+    /**
+     * @param key   Key of the unknown contact.
+     */
     void NewContactListener(IKey key);
 }

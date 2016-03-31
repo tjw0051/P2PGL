@@ -16,21 +16,19 @@ public class ProfileCache implements IProfileCache {
      */
     private Map<Long, IProfile> profilesAtTime;
 
+    /**
+     * Create an empty profile cache.
+     */
     public ProfileCache() {
         profilesAtTime = new HashMap<>();
-        profileNames = new ArrayList<>();
     }
 
-    /**
-     * Maintains a list of names for each profile stored to reduce processing
-     * each time GetNames() or Contains() is called.
+    /** Create a profile cache initialized with a list of profiles.
+     * @param profile   List of profiles.
      */
-    private List<String> profileNames;
-
     public ProfileCache(IProfile[] profile) {
         this();
         Add(profile);
-        AddNames(profile);
     }
 
     /**
@@ -40,7 +38,6 @@ public class ProfileCache implements IProfileCache {
      */
     public void Add(IProfile profile) {
         profilesAtTime.put(GetTime(), profile);
-        profileNames.add(profile.GetName());
     }
 
     /**
@@ -52,13 +49,6 @@ public class ProfileCache implements IProfileCache {
         for(IProfile profile: profiles) {
             Long time = GetTime();
             profilesAtTime.put(time, profile);
-            AddNames(profiles);
-        }
-    }
-
-    private void AddNames(IProfile[] profiles) {
-        for(IProfile prof: profiles) {
-            profileNames.add(prof.GetName());
         }
     }
 
@@ -87,6 +77,10 @@ public class ProfileCache implements IProfileCache {
         return null;
     }
 
+    /** Check if cache contains a profile with matching IKey.
+     * @param key IKey to search for
+     * @return  Returns true if a matching profile is found.
+     */
     public boolean Contains(IKey key) {
         Iterator iter = profilesAtTime.entrySet().iterator();
         while(iter.hasNext()) {
@@ -111,7 +105,6 @@ public class ProfileCache implements IProfileCache {
             Map.Entry entry = (Map.Entry) iter.next();
             if(((IProfile) entry.getValue()).GetName().equals(name)) {
                 iter.remove();
-                profileNames.remove(iterStep);
             }
             iterStep++;
         }
@@ -122,7 +115,6 @@ public class ProfileCache implements IProfileCache {
      */
     public void Clear() {
         profilesAtTime.clear();
-        profileNames.clear();
     }
 
     /**

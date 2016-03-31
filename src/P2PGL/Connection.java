@@ -2,19 +2,15 @@ package P2PGL;
 
 import P2PGL.DHT.IDHTFacade;
 import P2PGL.DHT.ISerializedData;
-import P2PGL.DHT.KademliaFacade;
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.EventListener.NewContactListener;
+import P2PGL.Exceptions.ContentNotFoundException;
 import P2PGL.Profile.IProfile;
-import P2PGL.Profile.Profile;
-import P2PGL.Profile.ProfileCache;
+import P2PGL.UDP.IUDPChannel;
 import P2PGL.UDP.UDPChannel;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.sun.istack.internal.Nullable;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-import kademlia.dht.DHT;
-import kademlia.node.KademliaId;
 
 
 import java.io.IOException;
@@ -34,14 +30,14 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     private Gson gson;
     private IDHTFacade dht;
     private IKey key;
-    private UDPChannel udpChannel;
+    private IUDPChannel udpChannel;
     private List<MessageReceivedListener> messageReceivedListeners;
 
     /**
      * Instantiate a new connection to a network.
      * @param profile   Connection parameters for peer (e.g. port, IP Address, name)
      */
-    public Connection(IProfile profile, IDHTFacade dhtImplementation) {
+    public Connection(IProfile profile, IDHTFacade dhtImplementation, IUDPChannel udpChannel) {
         this.profile = profile;
         GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(IKey.class, new InterfaceAdapter<IKey>());
         gson = gsonBuilder.create();
@@ -50,9 +46,10 @@ public class Connection implements NewContactListener, MessageReceivedListener{
 
         //Create UDP
         messageReceivedListeners = new ArrayList<>();
-        udpChannel = new UDPChannel(profile, profile.GetUDPPort());
+        //udpChannel = new UDPChannel(profile, profile.GetUDPPort());
+        this.udpChannel = udpChannel;
         udpChannel.AddContactListener(this);
-        udpChannel.addMessageListener(this);
+        udpChannel.AddMessageListener(this);
     }
 
     public void Connect() throws IOException {
@@ -115,7 +112,7 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     }
 
     public void Broadcast(String message) throws IOException{
-        udpChannel.Broadcast(message);
+        udpChannel.Broadcast(message, String.class);
     }
     /*
     @Nullable
@@ -125,10 +122,14 @@ public class Connection implements NewContactListener, MessageReceivedListener{
     */
     @Nullable
     public <T> T Get(IKey key, Type type) throws IOException, ClassNotFoundException {
-        ISerializedData serializedData = dht.Get(key, type.getTypeName());
-        if(serializedData == null)
+        try {
+            ISerializedData serializedData = dht.Get(key, type.getTypeName());
+            if (serializedData == null)
+                return null;
+            return gson.fromJson(serializedData.GetData(), (Type) Class.forName(serializedData.GetType()));
+        } catch (ContentNotFoundException cnfe) {
             return null;
-        return gson.fromJson(serializedData.GetData(), (Type)Class.forName(serializedData.GetType()));
+        }
     }
 
     /**
@@ -234,5 +235,5 @@ public class Connection implements NewContactListener, MessageReceivedListener{
             listener.MessageReceivedListener(obj, messageType, sender);
     }
 
-    public UDPChannel GetUDPChannel() { return udpChannel; }
+    public IUDPChannel GetUDPChannel() { return udpChannel; }
 }

@@ -7,7 +7,6 @@ import P2PGL.InterfaceAdapter;
 import P2PGL.Profile.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -33,9 +32,13 @@ public class UDPChannel implements IUDPChannel {
     private IProfile profile;
     private Random rand;
 
-    public UDPChannel(IProfile profile, int port) {
+    public UDPChannel(IProfile profile) {
+        this(profile, profile.GetUDPPort());
         this.profile = profile;
-        this.port = port;
+        this.port = profile.GetUDPPort();
+    }
+
+    public UDPChannel(IProfile profile, int port) {
         messageReceivedListeners = new ArrayList<>();
         newContactListeners = new ArrayList<>();
         incomingQueue = new LinkedList<>();
@@ -54,9 +57,11 @@ public class UDPChannel implements IUDPChannel {
         //Start listening to messages, create event for receive trigger.
     }
 
-    public void addMessageListener(MessageReceivedListener listener) {
+    public void AddMessageListener(MessageReceivedListener listener) {
         messageReceivedListeners.add(listener);
     }
+
+    public void RemoveMessageListener(MessageReceivedListener listener) { messageReceivedListeners.remove(listener); }
 
     /** Called when listener Thread receives a new message.
      * @param packet   Serialized JSON message received.
@@ -75,6 +80,8 @@ public class UDPChannel implements IUDPChannel {
     }
     //TODO: remove functions for listeners
     public void AddContactListener(NewContactListener listener) { newContactListeners.add(listener); }
+
+    public void RemoveContactListener(NewContactListener listener) { newContactListeners.remove(listener); }
 
     private void NewContactListener(IKey key) {
         for(NewContactListener listener : newContactListeners) {
@@ -141,11 +148,6 @@ public class UDPChannel implements IUDPChannel {
         Iterator iter = profiles.iterator();
         while(iter.hasNext()) {
             IProfile entry = (IProfile)iter.next();
-            //If the message cannot be sent to the player, remove
-            //the player from the cache.
-
-           // if(Send(entry, obj, type) == -1)
-                //profileCache.Remove(entry.GetName());
             try {
                 Send(entry, obj, type);
             } catch (IOException ioe) {
@@ -253,6 +255,7 @@ public class UDPChannel implements IUDPChannel {
             }
         }
     }
+
     public void Stop() {
         listening = false;
     }
