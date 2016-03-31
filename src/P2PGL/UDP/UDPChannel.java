@@ -34,7 +34,7 @@ public class UDPChannel implements ILocalChannel {
     private Random rand;
 
     /** Create a new UDP channel on port in profile.GetLocalChannelPort.
-     * @param profile
+     * @param profile   Profile of this peer.
      */
     public UDPChannel(IProfile profile) {
         this(profile, profile.GetLocalChannelPort());

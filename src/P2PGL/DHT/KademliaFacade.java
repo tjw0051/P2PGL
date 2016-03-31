@@ -47,7 +47,7 @@ public class KademliaFacade implements IDHTFacade {
      * @param serverName    Name of server
      * @param serverAddress Address of server
      * @param serverPort    Port of server
-     * @throws IOException
+     * @throws IOException  Could not Connect to DHT
      */
     @Override
     public void Connect(String serverName, InetAddress serverAddress, int serverPort) throws IOException{
@@ -58,7 +58,7 @@ public class KademliaFacade implements IDHTFacade {
 
     /** Create a Kademlia node without bootstrapping to an existing network.
      *  Can be used to create a bootstrap server.
-     * @throws IOException
+     * @throws IOException  Could not connect to DHT
      */
     @Override
     public void Connect() throws IOException {
@@ -96,9 +96,9 @@ public class KademliaFacade implements IDHTFacade {
     /** GetHybridConnection data of Type type from DHT stored at IKey key.
      * @param key  Key that the data is stored under
      * @param type String type name of the data
-     * @return
-     * @throws IOException
-     * @throws ContentNotFoundException
+     * @return  Serialized data and type
+     * @throws IOException  Could not get data from DHT
+     * @throws ContentNotFoundException Key not found in DHT.
      */
     @Override
     public ISerializedData Get(IKey key, String type) throws IOException, ContentNotFoundException {

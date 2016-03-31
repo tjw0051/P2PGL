@@ -20,7 +20,7 @@ public interface IDHTFacade {
     void SetProfile(IProfile profile);
 
     /** Start a DHT node without connecting to an existing node
-     * @example Used to create a server.
+     * Used to create a server.
      * @throws IOException  Cannot create DHT node.
      */
     void Connect() throws IOException;
@@ -57,8 +57,8 @@ public interface IDHTFacade {
      * @param type  String type name of the data
      * @return  The data in an ISerializedData object.
      * @throws IOException  Error getting data from DHT.
+     * @throws ContentNotFoundException Data not found in DHT
      */
-    //TODO: Use IKey for keys instead of strings.
     ISerializedData Get(IKey key, String type) throws IOException, ContentNotFoundException;
 
     /** List users connected to DHT.
