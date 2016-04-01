@@ -28,6 +28,10 @@ public interface IHybridConnection {
      */
     void Connect(String serverName, InetAddress serverAddress, int serverPort) throws IOException;
 
+    /** Check if DHT is connected.
+     * @return  True if DHT is connected.
+     */
+    boolean isConnected();
 
     /** Disconnect from local and DHT network.
      * @throws IOException  Error disconnecting.

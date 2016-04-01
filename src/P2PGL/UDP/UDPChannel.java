@@ -83,7 +83,7 @@ public class UDPChannel implements ILocalChannel {
     /** Called when listener Thread receives a new message.
      * @param packet   Serialized JSON message received.
      */
-    private void MessageReceived(UDPPacket packet) {
+    protected void MessageReceived(UDPPacket packet) {
         try {
             Class C = Class.forName(packet.type);
             Object obj = gson.fromJson(packet.message, C);
@@ -110,7 +110,7 @@ public class UDPChannel implements ILocalChannel {
     /** Calls NewContactListeners when a message is received from an unknown contact.
      * @param key
      */
-    private void NewContactListener(IKey key) {
+    protected void NewContactListener(IKey key) {
         for(NewContactListener listener : newContactListeners) {
             listener.NewContactListener(key);
         }
@@ -152,7 +152,7 @@ public class UDPChannel implements ILocalChannel {
      * @param channelName   Channel name message is sent on.
      * @return  Json serialized UDP packet.
      */
-    private String SerializePacket(Object obj, Type type, IKey key, String channelName) {
+    protected String SerializePacket(Object obj, Type type, IKey key, String channelName) {
         String data = gson.toJson(obj, type);
         UDPPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
         return SerializePacket(packet);
@@ -224,7 +224,7 @@ public class UDPChannel implements ILocalChannel {
     /**
      * Listens to incoming UDP messages.
      */
-    private class ListenThread implements Runnable{
+    protected class ListenThread implements Runnable{
         DatagramSocket socket;
         int port;
         public ListenThread(int port) {

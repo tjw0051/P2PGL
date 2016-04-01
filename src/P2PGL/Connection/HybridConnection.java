@@ -29,7 +29,6 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     private IProfile profile;
     private Gson gson;
     private IDHTFacade dht;
-    private IKey key;
     private ILocalChannel localChannel;
     private List<MessageReceivedListener> messageReceivedListeners;
 
@@ -172,7 +171,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
      * @return  Key profile is stored at.
      * @throws IOException
      */
-    private IKey StoreProfile() throws IOException {
+    protected IKey StoreProfile() throws IOException {
         IKey profileKey = profile.GetKey().Next();
         dht.Store(profileKey, gson.toJson(profile, profile.GetType()), profile.getClass().getTypeName());
         return profileKey;

@@ -16,9 +16,13 @@ import static org.junit.Assert.*;
 /**
  * Created by t_j_w on 18/03/2016.
  */
-public class UDPChannelTest {
+public class UDPChannelTest extends UDPChannel{
 
     UDPChannel udpChannel;
+
+    public UDPChannelTest(IProfile profile) {
+        super(profile);
+    }
 
     @Test
     public void testListen() throws Exception {
@@ -28,7 +32,7 @@ public class UDPChannelTest {
         //Thread.sleep(50);
         DatagramSocket serverSock = new DatagramSocket();
         //serverSock.connect(InetAddress.getLoopbackAddress(), 5000);
-        byte[] message = udpChannel.SerializePacket(msg, String.class, new Key(), "channel").getBytes(); //msg.getBytes();
+        byte[] message = super.SerializePacket(msg, String.class, new Key(), "channel").getBytes(); //msg.getBytes();
         DatagramPacket packet = new DatagramPacket(message, message.length, InetAddress.getLoopbackAddress(), 5000);
         serverSock.send(packet);
         long time = System.currentTimeMillis();
@@ -60,7 +64,7 @@ public class UDPChannelTest {
         //UDPChannel is profile port + 1 : profile must be set to 5009.
         Profile profile = new Profile(InetAddress.getLoopbackAddress(), 5009, "channel_0");
         try {
-            udpChannel.Send(profile, "hi");
+            udpChannel.Send(profile, "hi", String.class);
         } catch (IOException ioe) {
             fail("Error sending message");
         }
@@ -74,7 +78,7 @@ public class UDPChannelTest {
         long time = System.currentTimeMillis();
         while(System.currentTimeMillis() - time < 5000 && message == null) {
             try {
-                udpChannel.Send(profile, "hi");
+                udpChannel.Send(profile, "hi", String.class);
                 message = serverUDP.ReadNext();
             } catch (IOException ioe) {
                 fail("Error sending message");
