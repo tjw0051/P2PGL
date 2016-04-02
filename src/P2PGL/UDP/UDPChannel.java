@@ -33,6 +33,9 @@ public class UDPChannel implements ILocalChannel {
     private IProfile profile;
     private Random rand;
 
+    private Thread ackMessageOperationThread;
+    private AckMessageOperation ackMessageOperation;
+
     /** Create a new UDP channel on port in profile.GetLocalChannelPort.
      * @param profile   Profile of this peer.
      */
@@ -55,6 +58,9 @@ public class UDPChannel implements ILocalChannel {
         GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(IKey.class, new InterfaceAdapter<IKey>());
         this.gson = gsonBuilder.create();
         this.rand = new Random();
+
+        ackMessageOperation = new AckMessageOperation(this);
+        ackMessageOperationThread = new Thread(ackMessageOperation);
     }
 
     /** Start listening to incoming messages
@@ -85,11 +91,11 @@ public class UDPChannel implements ILocalChannel {
      */
     protected void MessageReceived(UDPPacket packet) {
         try {
-            Class C = Class.forName(packet.type);
-            Object obj = gson.fromJson(packet.message, C);
+            Class C = Class.forName(packet.GetType());
+            Object obj = gson.fromJson(packet.getMessage(), C);
 
             for(MessageReceivedListener listener : messageReceivedListeners) {
-                listener.MessageReceivedListener(obj, C, packet.sender);
+                listener.MessageReceivedListener(obj, C, packet.GetSender());
             }
         } catch (ClassNotFoundException cnfe) {
         }
@@ -138,11 +144,39 @@ public class UDPChannel implements ILocalChannel {
      * @throws IOException  Error sending message to peer
      */
     public void Send(IProfile profile, Object obj, Type type) throws IOException{
-        //Send(SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName()).getBytes());
-        byte[] bytes = SerializePacket(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName()).getBytes();
+        Send(profile, SerializeData(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName()));
+        /*
+        byte[] bytes = SerializePacket(
+                SerializeData(obj, type, this.profile.GetKey(),
+                        this.profile.GetLocalChannelName())).getBytes();
         DatagramSocket socket = new DatagramSocket();
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetLocalChannelPort());
         socket.send(packet);
+        */
+    }
+
+    /** Send a message to a single peer
+     * @param profile   Profile of peer to send message to
+     * @param udpPacket Packet to send
+     * @throws IOException  Error sending message to peer
+     */
+    public void Send(IProfile profile, UDPPacket udpPacket) throws IOException{
+        byte[] bytes = SerializePacket(udpPacket).getBytes();
+        DatagramSocket socket = new DatagramSocket();
+        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetLocalChannelPort());
+        socket.send(packet);
+    }
+
+    /** Send a message requiring acknowledgement of receipt to a single peer
+     * @param profile   Profile of peer to send message to
+     * @param obj   Object to send
+     * @param type  Type of object
+     * @throws IOException  Error sending message to peer
+     */
+    public void SendAck(IProfile profile, Object obj, Type type) throws IOException {
+        UDPPacket packet = SerializeData(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName());
+        packet.SetAck(ConnectionFactory.GetKey());
+        ackMessageOperation.Add(packet, profile);
     }
 
     /** Serialize data and store in Json serialized UDP packet
@@ -152,17 +186,18 @@ public class UDPChannel implements ILocalChannel {
      * @param channelName   Channel name message is sent on.
      * @return  Json serialized UDP packet.
      */
-    protected String SerializePacket(Object obj, Type type, IKey key, String channelName) {
+    protected UDPPacket SerializeData(Object obj, Type type, IKey key, String channelName) {
         String data = gson.toJson(obj, type);
         UDPPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
-        return SerializePacket(packet);
+        //return SerializeData(packet);
+        return packet;
     }
 
     /** Serialize UDP Packet to Json
      * @param packet    packet to serialize
      * @return
      */
-    private String SerializePacket(UDPPacket packet) {
+    protected String SerializePacket(UDPPacket packet) {
         return gson.toJson(packet, UDPPacket.class);
     }
 
@@ -170,7 +205,7 @@ public class UDPChannel implements ILocalChannel {
      * @param ser   Json UDP Packet
      * @return  UDPPacket Object
      */
-    public UDPPacket DeserializePacket(String ser) {
+    protected UDPPacket DeserializePacket(String ser) {
         return gson.fromJson(ser, UDPPacket.class);
     }
 
@@ -184,11 +219,22 @@ public class UDPChannel implements ILocalChannel {
         Iterator iter = profiles.iterator();
         while(iter.hasNext()) {
             IProfile entry = (IProfile)iter.next();
-            try {
-                Send(entry, obj, type);
-            } catch (IOException ioe) {
-                System.out.println("Cannot send to: " + entry.GetName());
-            }
+            Send(entry, obj, type);
+        }
+    }
+
+    /** Send a message  requiring acknowledgement of receipt to all
+     *  clients in the channel (profile cache)
+     * @param obj   Object to be sent.
+     * @param type  Type of obj.
+     * @throws IOException  Error sending message.
+     */
+    public void BroadcastAck(Object obj, Type type) throws IOException {
+        Collection<IProfile> profiles = profileCache.Get();
+        Iterator iter = profiles.iterator();
+        while(iter.hasNext()) {
+            IProfile entry = (IProfile)iter.next();
+            SendAck(entry, obj, type);
         }
     }
 
@@ -201,7 +247,7 @@ public class UDPChannel implements ILocalChannel {
         if(incomingQueue.isEmpty())
             return null;
         UDPPacket packet = incomingQueue.remove();
-        return gson.fromJson(packet.message, (Type)Class.forName(packet.type));
+        return gson.fromJson(packet.getMessage(), (Type)Class.forName(packet.GetType()));
     }
 
     /** Read next object in the queue without removing it.
@@ -211,7 +257,7 @@ public class UDPChannel implements ILocalChannel {
      */
     public <T> T PeekNext() throws ClassNotFoundException{
         UDPPacket packet = incomingQueue.peek();
-        return gson.fromJson(packet.message, (Type)Class.forName(packet.type));
+        return gson.fromJson(packet.getMessage(), (Type)Class.forName(packet.GetType()));
     }
 
     /**
@@ -232,8 +278,11 @@ public class UDPChannel implements ILocalChannel {
         }
 
         public void run() {
-            try {
-                socket = new DatagramSocket(port);
+                try {
+                    socket = new DatagramSocket(port);
+                } catch (SocketException se) {
+                    //TODO: Handle socket exception
+                }
                 byte[] buffer = new byte[10000];
                 DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
 
@@ -243,8 +292,9 @@ public class UDPChannel implements ILocalChannel {
                         byte[] receivedData = receivedPacket.getData();
                         String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                         UDPPacket packet = DeserializePacket(serializedData);
-                        if(packet.channel.equals(channelName)) {
-                            incomingQueue.add(packet);
+                        if(packet.GetChannel().equals(channelName)) {
+                            if(packet.getMessage() != "ack")
+                                incomingQueue.add(packet);
 
                             /* Listeners require extra processing so are run in a separate thread
                                 to prevent ListenThread from blocking */
@@ -252,23 +302,48 @@ public class UDPChannel implements ILocalChannel {
                                 @Override
                                 public void run() {
                                     MessageReceived(packet);
-                                    //TODO: If update from unknown player, add to cache.
-                                    if(!profileCache.Contains(packet.sender))
-                                        NewContactListener(packet.sender);
+
+                                    if (!profileCache.Contains(packet.GetSender()))
+                                        NewContactListener(packet.GetSender());
+                                    else {
+                                        //process ack messages
+                                        if (packet.GetAckKey() != null) {
+                                            try {
+                                                ProcessAck(packet);
+                                            } catch (IOException ioe) {
+                                                //TODO: handle - error sending ack
+                                            }
+                                        }
+
+                                    }
                                 }
                             }).start();
                         }
                     } catch(IOException ioe) {
-                        System.out.println("IOException");
+                        //TODO Handle - thrown at socket.receive - error receiving
                     }
                 }
                 if(!listening) {
                     socket.disconnect();
                     socket.close();
                 }
-            } catch(SocketException se) {
-                System.out.println("Socket Exception");
-                //TODO: do something if socket exception.
+        }
+
+        /** Called when a packet contains an acknowledgement key.
+         *  -   If the packet requires acknowledgement, an ack message
+         *      is sent back.
+         *  -   If the packet IS an acknowledgement, the AckMessageOperation
+         *      is called, to stop further resends.
+         * @param packet
+         */
+        private void ProcessAck(UDPPacket packet) throws IOException {
+            if(packet.getMessage().equals("ack")) {
+                ackMessageOperation.AckReceived(packet.GetAckKey());
+            }
+            else {
+                UDPPacket ackPacket = new UDPPacket("ack", "", profile.GetKey(), channelName);
+                ackPacket.SetAck(packet.GetAckKey());
+                Send(profileCache.Get(packet.GetSender()), ackPacket);
             }
         }
     }

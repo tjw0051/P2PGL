@@ -75,6 +75,15 @@ public class ProfileCache implements IProfileCache {
         return null;
     }
 
+    public IProfile Get(IKey key) {
+        for(Map.Entry<Long, IProfile> entry : profilesAtTime.entrySet()) {
+            if(entry.getValue().GetKey().Equals(key)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
     /** Check if cache contains a profile with matching IKey.
      * @param key IKey to search for
      * @return  Returns true if a matching profile is found.

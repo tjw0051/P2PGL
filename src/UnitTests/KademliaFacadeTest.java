@@ -14,7 +14,7 @@ import static org.junit.Assert.*;
 /**
  * Created by t_j_w on 25/03/2016.
  */
-public class KademliaFacadeTest {
+public class KademliaFacadeTest extends KademliaFacade{
     KademliaFacade serverKad, clientKad;
     Key clientKey, serverKey;
 
@@ -128,7 +128,14 @@ public class KademliaFacadeTest {
     }
 
     @Test
-    public void testPadKey() throws Exception {
+    public void testPadKeyShort() throws Exception {
+        String testLong = PadKey("hello");
+        assertTrue(testLong.length() <= 20);
+    }
 
+    @Test
+    public void testPadKeyLong() throws Exception {
+        String testShort = PadKey("1234567890123456789012345");
+        assertTrue(testShort.length() <= 20);
     }
 }

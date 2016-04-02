@@ -24,6 +24,12 @@ public interface IProfileCache {
      */
     IProfile Get(String name);
 
+    /** Get first IProfile of matching key
+     * @param key   Key of profile to find
+     * @return  Found profile - returns null if not found
+     */
+    IProfile Get(IKey key);
+
     /** GetHybridConnection all contacts stored in cache.
      * @return  Collection of IProfiles
      */

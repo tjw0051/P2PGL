@@ -18,6 +18,14 @@ public interface ILocalChannel {
      */
     void Broadcast(Object obj,Type type) throws IOException;
 
+    /** Send a message  requiring acknowledgement of receipt to all
+     *  clients in the channel (profile cache)
+     * @param obj   Object to be sent.
+     * @param type  Type of obj.
+     * @throws IOException  Error sending message.
+     */
+    void BroadcastAck(Object obj, Type type) throws IOException;
+
     /** Send a message to a single peer
      * @param profile   Profile of peer to send message to
      * @param obj   Object to send
@@ -25,6 +33,14 @@ public interface ILocalChannel {
      * @throws IOException  Error sending message to peer
      */
     void Send(IProfile profile, Object obj, Type type) throws IOException;
+
+    /** Send a message requiring acknowledgement of receipt to a single peer
+     * @param profile   Profile of peer to send message to
+     * @param obj   Object to send
+     * @param type  Type of object
+     * @throws IOException  Error sending message to peer
+     */
+    void SendAck(IProfile profile, Object obj, Type type) throws IOException;
 
     /** Add a listener to be informed when a message is received from an unknown key.
      * @param listener  Class implementing NewContactListener

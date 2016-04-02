@@ -1,5 +1,6 @@
 package P2PGL.UDP;
 
+import P2PGL.ConnectionFactory;
 import P2PGL.Util.IKey;
 
 /**
@@ -9,22 +10,30 @@ public class UDPPacket {
     /**
      * JSON serialization of type.
      */
-    public String message;
+    private String message;
+    public String getMessage() { return message; }
 
     /**
      * Deserialized Type of message.
      */
-    public String type;
+    private String type;
+    public String GetType() { return type; }
 
     /**
      * Key of sender
      */
-    public IKey sender;
+    private IKey sender;
+    public IKey GetSender() { return sender; }
 
     /**
      * Name of UDP Channel
      */
-    public String channel;
+    private String channel;
+    public String GetChannel() { return channel; }
+
+    private IKey ackKey;
+    public void SetAck(IKey key) { ackKey = key; }
+    public IKey GetAckKey() { return ackKey; }
 
     /** UDP packet for storing a Json serialized data and type name.
      * @param message   Json serialized object
@@ -40,4 +49,8 @@ public class UDPPacket {
         this.sender = sender;
         this.channel = channel;
     }
+
+
+
+
 }

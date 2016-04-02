@@ -143,9 +143,10 @@ public class KademliaFacade implements IDHTFacade {
      * @param key   String to be formatted.
      * @return  Formatted string of 20 characters.
      */
-    public static String PadKey(String key) {
+    protected static String PadKey(String key) {
         if(key.length() > 20)
-            throw new IllegalArgumentException("Key must be < 20 characters long");
+            key = key.substring(0, 19);
+            //throw new IllegalArgumentException("Key must be < 20 characters long");
         if(key.length() < 20)
             return String.format("%-20s", key).replace(' ', '0');
         else

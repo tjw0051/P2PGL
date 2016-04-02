@@ -219,7 +219,6 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     @Nullable
     public IProfile GetProfile(IKey userKey) throws IOException {
         try {
-            //String profileJson = GetHybridConnection(userKey.Next());
             IProfile prof = Get(userKey.Next(), profile.GetType());
             if(prof == null)
                 return null;
