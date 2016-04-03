@@ -1,8 +1,7 @@
 package UnitTests;
 
-import P2PGL.Connection.HybridConnection;
 import P2PGL.Connection.IHybridConnection;
-import P2PGL.ConnectionFactory;
+import P2PGL.P2PGL;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
 import P2PGL.Util.IKey;
@@ -10,9 +9,7 @@ import P2PGL.Util.Key;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -33,11 +30,11 @@ public class HybridConnectionTest {
     private void Connect(int serverPort, int clientPort) {
         serverProfile = new Profile(InetAddress.getLoopbackAddress(),
                 serverPort, serverPort+1, "channel0", "server", new Key());
-        serverConnection = ConnectionFactory.GetHybridConnection(serverProfile);
+        serverConnection = P2PGL.GetInstance().GetConnection(serverProfile);
 
         clientProfile = new Profile(InetAddress.getLoopbackAddress(),
                 clientPort, clientPort+1, "channel0", "client", new Key());
-        clientConnection = ConnectionFactory.GetHybridConnection(clientProfile);
+        clientConnection = P2PGL.GetInstance().GetConnection(clientProfile);
         try {
             serverConnection.Connect();
         } catch (IOException ioe) {

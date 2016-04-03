@@ -1,5 +1,7 @@
 package P2PGL.UDP;
 
+import P2PGL.Config.IAckMessageConfig;
+import P2PGL.P2PGL;
 import P2PGL.Profile.IProfile;
 import P2PGL.Util.IKey;
 
@@ -12,8 +14,8 @@ import java.util.List;
  * Operation for processing packets requiring acknowledgement of receipt.
  */
 public class AckMessageOperation implements Runnable {
-    private long timeout = 200L; // 200 milliseconds
-    private int maxResends = 3;
+    private final long timeout;
+    private final int maxResends;
 
     private UDPChannel udpChannel;
 
@@ -26,6 +28,9 @@ public class AckMessageOperation implements Runnable {
     private boolean running;
 
     public AckMessageOperation(UDPChannel udpChannel) {
+        IAckMessageConfig config = P2PGL.GetInstance().GetFactory().GetAckConfig();
+        this.timeout = config.GetTimeout();
+        this.maxResends = config.GetResends();
         packets = new ArrayList<>();
         newPackets = new ArrayList<>();
         ackKeys = new ArrayList<>();
@@ -34,9 +39,12 @@ public class AckMessageOperation implements Runnable {
         running = false;
     }
 
+    /**
+     * Iterates through processing acknowledgement messages and packet
+     * messages.
+     */
     public void run() {
         while(running == true && (!packets.isEmpty() || !newPackets.isEmpty())) {
-            ProcessAcks();
             try {
                 ProcessPackets();
             } catch (IOException ioe) {
@@ -45,6 +53,10 @@ public class AckMessageOperation implements Runnable {
         }
     }
 
+    /** Add a packet to the queue for outgoing messages
+     * @param packet
+     * @param profile
+     */
     public void Add(UDPPacket packet, IProfile profile) {
         newPackets.add(new AckMessage(packet, profile));
         if(!running) {
@@ -53,7 +65,7 @@ public class AckMessageOperation implements Runnable {
         }
     }
 
-    /**
+    /** Adds a new acknowledgement to the queue
      * @param key   Acknowledgement key.
      */
     public void AckReceived(IKey key) {
@@ -61,34 +73,9 @@ public class AckMessageOperation implements Runnable {
     }
 
     /**
-     * Checks if an acknowledgement has been received for packets sent.
-     * If a packet has been acknowledged, it is removed from the queue
-     * and not resent.
-     */
-    protected void ProcessAcks() {
-        if(!newAckKeys.isEmpty())
-            ackKeys.addAll(newAckKeys);
-
-        Iterator keyIter = ackKeys.iterator();
-        while(keyIter.hasNext()) {
-            boolean found = false;
-            IKey ackKey = (IKey) keyIter.next();
-            Iterator messageIter = packets.iterator();
-            while(messageIter.hasNext()) {
-                IKey messageKey = ((AckMessage) messageIter.next()).GetPacket().GetAckKey();
-                if(ackKey.Equals(messageKey)) {
-                    found = true;
-                    messageIter.remove();
-                    break;
-                }
-            }
-            if(found)
-                keyIter.remove();
-        }
-    }
-
-    /**
      * Iterates through packets:
+     * -    If an acknowledgement has been received for a packet, it
+     *      is removed from the queue and not resent.
      * -    If a packet has not been sent it is given a starting time.
      *
      * -    If the packet has been resent the maximum number of times,
@@ -99,28 +86,50 @@ public class AckMessageOperation implements Runnable {
      *      is set to the current time.
      */
     protected void ProcessPackets() throws IOException{
-        long currentTime = System.currentTimeMillis();
+        long currentTime;
+
+        /*  Add new packets and new acknowledgements to main queue  */
         if(!newPackets.isEmpty()) {
             packets.addAll(newPackets);
             newPackets.clear();
         }
+        if(!newAckKeys.isEmpty())
+            ackKeys.addAll(newAckKeys);
+
         Iterator iter = packets.iterator();
         while(iter.hasNext()) {
             AckMessage message = (AckMessage) iter.next();
-            currentTime = System.currentTimeMillis();
 
-            if(message.GetTimeSent() == 0L)
-                message.SetTimeSent(currentTime);
+            /*  Process Ack Messages  */
 
-            if(message.GetResends() >= maxResends) {
-                //Trigger event or exception
-                iter.remove();
+            boolean found = false;
+            Iterator keyIter = ackKeys.iterator();
+            while (keyIter.hasNext() && found == false) {
+                IKey ackKey = (IKey) keyIter.next();
+                if(ackKey.Equals(message.GetPacket().GetAckKey())) {
+                    found = true;
+                    keyIter.remove();
+                }
             }
-            else if(currentTime - message.GetTimeSent() > timeout) {
+            if(found)
+                iter.remove();
+            else {
+
+            /*  Process Packets */
+
+                currentTime = System.currentTimeMillis();
+                if (message.GetTimeSent() == 0L)
+                    message.SetTimeSent(currentTime);
+
+                if (message.GetResends() >= maxResends) {
+                    iter.remove();
+                } else if (currentTime - message.GetTimeSent() > timeout) {
                     udpChannel.Send(message.GetProfile(), message.GetPacket());
                     message.SetTimeSent(currentTime);
                     message.IncrementResends();
+                }
             }
+
         }
     }
 

@@ -107,7 +107,7 @@ public class KademliaFacade implements IDHTFacade {
             KademliaStorageEntry entry = node.get(getParameter);
             Data data = (new Data()).fromSerializedForm(entry.getContent());
             //return new SerializedData(data.getData(), data.getType());
-            return ConnectionFactory.GetSerializedData(data.getData(), data.getType());
+            return P2PGL.GetInstance().GetFactory().GetSerializedData(data.getData(), data.getType());
         } catch(kademlia.exceptions.ContentNotFoundException notFoundE) {
             throw new ContentNotFoundException("Data at key: " + key.toString() + " could not be found.");
         }
@@ -122,10 +122,10 @@ public class KademliaFacade implements IDHTFacade {
         List<Contact> routingContacts =  routingTable.getAllContacts();
         //String[] users = new String[routingContacts.size()];
         //IKey[] users = new Key[routingContacts.size()];
-        IKey[] users = ConnectionFactory.GetKeys(routingContacts.size());
+        IKey[] users = P2PGL.GetInstance().GetFactory().GetKeys(routingContacts.size());
         for(int i = 0; i < routingContacts.size(); i++) {
             //users[i] = new Key(routingContacts.get(i).getNode().getNodeId().getBytes());
-            users[i] = ConnectionFactory.GetKey(routingContacts.get(i).getNode().getNodeId().getBytes());
+            users[i] = P2PGL.GetInstance().GetFactory().GetKey(routingContacts.get(i).getNode().getNodeId().getBytes());
         }
         return users;
     }
@@ -136,7 +136,7 @@ public class KademliaFacade implements IDHTFacade {
     @Override
     public IKey GetId() {
         //return new Key(node.getNode().getNodeId().getBytes());
-        return ConnectionFactory.GetKey(node.getNode().getNodeId().getBytes());
+        return P2PGL.GetInstance().GetFactory().GetKey(node.getNode().getNodeId().getBytes());
     }
 
     /** Extend or shorten a string to 20 characters - required by KademliaId node IDs.

@@ -1,6 +1,7 @@
 package P2PGL.Connection;
 
 import P2PGL.DHT.IDHTFacade;
+import P2PGL.P2PGLFactory;
 import P2PGL.Util.ISerializedData;
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.EventListener.NewContactListener;
@@ -34,7 +35,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
 
 
     /** Create a new Hybrid connection using a DHT implementation and local channel implementation
-     * @see P2PGL.ConnectionFactory
+     * @see P2PGLFactory
      * @param profile   Profile containing descriptor for this node.
      * @param dhtImplementation DHT implementation to be used.
      * @param localChannel    Local channel implementation to use.

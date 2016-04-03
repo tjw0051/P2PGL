@@ -1,5 +1,7 @@
 package P2PGL;
 
+import P2PGL.Config.AckMessageConfig;
+import P2PGL.Config.IAckMessageConfig;
 import P2PGL.Connection.HybridConnection;
 import P2PGL.Connection.IHybridConnection;
 import P2PGL.Util.ISerializedData;
@@ -15,12 +17,14 @@ import P2PGL.Util.Key;
 /**
  * Factory to create objects for setting up a Kademlia DHT.
  */
-public class ConnectionFactory {
+public class P2PGLFactory implements IP2PGLFactory {
+
+    public P2PGLFactory() {}
     /** Create a new Hybrid Connection using the Kademlia DHT and a UDP local channel
      * @param profile   Config for setting up Connection
      * @return  Newly created HybridConnection
      */
-    public static IHybridConnection GetHybridConnection(IProfile profile) {
+    public IHybridConnection GetHybridConnection(IProfile profile) {
         IHybridConnection conn = new HybridConnection(profile,
                 new KademliaFacade(profile),
                 new UDPChannel(profile, profile.GetLocalChannelPort()));
@@ -32,21 +36,21 @@ public class ConnectionFactory {
      * @param type  Type of data.
      * @return  Newly created SerializedData
      */
-    public static ISerializedData GetSerializedData(String data, String type) {
+    public ISerializedData GetSerializedData(String data, String type) {
         return new SerializedData(data, type);
     }
 
     /** Creates a new ProfileCache instance
      * @return  Newly created ProfileCache
      */
-    public static IProfileCache GetProfileCache() {
+    public IProfileCache GetProfileCache() {
         return new ProfileCache();
     }
 
     /** Creates a new Key instance
      * @return  Newly created Key
      */
-    public static IKey GetKey() {
+    public IKey GetKey() {
         return new Key();
     }
 
@@ -54,7 +58,7 @@ public class ConnectionFactory {
      * @param bytes Key parameter
      * @return  Newly created Key
      */
-    public static IKey GetKey(byte[] bytes) {
+    public IKey GetKey(byte[] bytes) {
         return new Key(bytes);
     }
 
@@ -62,7 +66,12 @@ public class ConnectionFactory {
      * @param count Size of Key array
      * @return  Newly created Key Array
      */
-    public static IKey[] GetKeys(int count) {
+    public IKey[] GetKeys(int count) {
         return new Key[count];
     }
+
+    /** Returns a class containing configuration for sending ack messages
+     * @return Ack Message Configuration.
+     */
+    public IAckMessageConfig GetAckConfig() { return new AckMessageConfig(); }
 }

@@ -1,6 +1,5 @@
 package P2PGL.UDP;
 
-import P2PGL.ConnectionFactory;
 import P2PGL.Util.IKey;
 
 /**

@@ -1,7 +1,7 @@
 package P2PGL.Profile;
 
+import P2PGL.P2PGL;
 import P2PGL.Util.IKey;
-import P2PGL.ConnectionFactory;
 
 import java.lang.reflect.Type;
 import java.net.InetAddress;
@@ -51,7 +51,7 @@ public class Profile implements IProfile {
      * @param name  Name of Profile owner
      */
     public Profile(InetAddress address, int port, String name) {
-        this(address, port, port+1, null, name, ConnectionFactory.GetKey());
+        this(address, port, port+1, null, name, P2PGL.GetInstance().GetFactory().GetKey());
     }
 
     /**

@@ -2,9 +2,9 @@ package P2PGL.UDP;
 
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.EventListener.NewContactListener;
+import P2PGL.P2PGL;
 import P2PGL.Util.IKey;
 import P2PGL.Util.InterfaceAdapter;
-import P2PGL.ConnectionFactory;
 import P2PGL.Profile.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -53,7 +53,7 @@ public class UDPChannel implements ILocalChannel {
         messageReceivedListeners = new ArrayList<>();
         newContactListeners = new ArrayList<>();
         incomingQueue = new LinkedList<>();
-        profileCache = ConnectionFactory.GetProfileCache();
+        profileCache = P2PGL.GetInstance().GetFactory().GetProfileCache();
         listening = false;
         GsonBuilder gsonBuilder = new GsonBuilder().registerTypeAdapter(IKey.class, new InterfaceAdapter<IKey>());
         this.gson = gsonBuilder.create();
@@ -175,7 +175,7 @@ public class UDPChannel implements ILocalChannel {
      */
     public void SendAck(IProfile profile, Object obj, Type type) throws IOException {
         UDPPacket packet = SerializeData(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName());
-        packet.SetAck(ConnectionFactory.GetKey());
+        packet.SetAck(P2PGL.GetInstance().GetFactory().GetKey());
         ackMessageOperation.Add(packet, profile);
     }
 
