@@ -1,9 +1,11 @@
 package P2PGL;
 
 import P2PGL.Config.IAckMessageConfig;
+import P2PGL.Config.KademliaConfig;
 import P2PGL.Connection.IHybridConnection;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.IProfileCache;
+import P2PGL.UDP.IPacket;
 import P2PGL.Util.IKey;
 import P2PGL.Util.ISerializedData;
 
@@ -53,4 +55,10 @@ public interface IP2PGLFactory {
      * @return Ack Message Configuration.
      */
     IAckMessageConfig GetAckConfig();
+
+    IPacket GetPacket(String message, String type, IKey sender, String channel);
+
+    IPacket GetPacket();
+
+    KademliaConfig GetDHTConfig();
 }

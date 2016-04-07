@@ -1,5 +1,3 @@
-package UnitTests;
-
 import P2PGL.Connection.IHybridConnection;
 import P2PGL.P2PGL;
 import P2PGL.Profile.IProfile;
@@ -93,18 +91,24 @@ public class HybridConnectionTest {
     public void testBroadcast() throws  InterruptedException{
         Connect(5016, 5018);
         joinLocal();
-        try {
-            clientConnection.Broadcast("Hello", String.class);
-        } catch (IOException e) {
-            fail("Error broadcasting message");
+
+        String message = null;
+        long time = System.currentTimeMillis();
+        while(System.currentTimeMillis() - time < 2000 && message == null ) {
+            try {
+                clientConnection.Broadcast("Hello", String.class);
+            } catch (IOException e) {
+                fail("Error broadcasting message");
+            }
+
+            try {
+            message = serverConnection.GetLocalChannel().ReadNext();
+            } catch (ClassNotFoundException e) {
+                fail("Class not found");
+            }
         }
-        try {
-            Thread.sleep(100);
-            String message = serverConnection.GetLocalChannel().ReadNext();
-            assertTrue(message.equals("Hello"));
-        } catch (ClassNotFoundException e) {
-            fail("Class not found");
-        }
+        assertTrue(message.equals("Hello"));
+
 
     }
 
@@ -152,9 +156,9 @@ public class HybridConnectionTest {
         IKey[] keys = clientConnection.ListUsers();
         assertTrue("Length is: " + keys.length, keys.length == 3);
         boolean clientFound = false, serverFound = false;
-        System.out.println("client key: " + clientConnection.GetKey().toString());
+        //System.out.println("client key: " + clientConnection.GetKey().toString());
         for(IKey key : keys) {
-            System.out.println("Key: " + key.toString());
+            //System.out.println("Key: " + key.toString());
             if(key.Equals(clientConnection.GetKey()))
                 clientFound = true;
             if(key.Equals(serverConnection.GetKey()))

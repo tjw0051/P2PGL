@@ -1,5 +1,3 @@
-package UnitTests;
-
 import P2PGL.Connection.IHybridConnection;
 import P2PGL.P2PGLFactory;
 import P2PGL.Profile.IProfile;

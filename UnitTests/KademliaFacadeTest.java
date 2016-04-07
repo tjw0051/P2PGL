@@ -1,5 +1,3 @@
-package UnitTests;
-
 import P2PGL.DHT.KademliaFacade;
 import P2PGL.Util.IKey;
 import P2PGL.Util.Key;

@@ -9,6 +9,7 @@ import P2PGL.Profile.*;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.CharArrayReader;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.DatagramPacket;
@@ -23,7 +24,7 @@ import java.util.*;
 public class UDPChannel implements ILocalChannel {
     private int port;
     private String channelName;
-    private Queue<UDPPacket> incomingQueue;
+    private Queue<IPacket> incomingQueue;
     private List<MessageReceivedListener> messageReceivedListeners;
     private List<NewContactListener> newContactListeners;
     private Thread listenThread;
@@ -89,10 +90,10 @@ public class UDPChannel implements ILocalChannel {
     /** Called when listener Thread receives a new message.
      * @param packet   Serialized JSON message received.
      */
-    protected void MessageReceived(UDPPacket packet) {
+    protected void MessageReceived(IPacket packet) {
         try {
             Class C = Class.forName(packet.GetType());
-            Object obj = gson.fromJson(packet.getMessage(), C);
+            Object obj = gson.fromJson(packet.GetMessage(), C);
 
             for(MessageReceivedListener listener : messageReceivedListeners) {
                 listener.MessageReceivedListener(obj, C, packet.GetSender());
@@ -160,7 +161,7 @@ public class UDPChannel implements ILocalChannel {
      * @param udpPacket Packet to send
      * @throws IOException  Error sending message to peer
      */
-    public void Send(IProfile profile, UDPPacket udpPacket) throws IOException{
+    public void Send(IProfile profile, IPacket udpPacket) throws IOException{
         byte[] bytes = SerializePacket(udpPacket).getBytes();
         DatagramSocket socket = new DatagramSocket();
         DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetLocalChannelPort());
@@ -174,8 +175,8 @@ public class UDPChannel implements ILocalChannel {
      * @throws IOException  Error sending message to peer
      */
     public void SendAck(IProfile profile, Object obj, Type type) throws IOException {
-        UDPPacket packet = SerializeData(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName());
-        packet.SetAck(P2PGL.GetInstance().GetFactory().GetKey());
+        IPacket packet = SerializeData(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName());
+        packet.SetAckKey(P2PGL.GetInstance().GetFactory().GetKey());
         ackMessageOperation.Add(packet, profile);
     }
 
@@ -186,10 +187,10 @@ public class UDPChannel implements ILocalChannel {
      * @param channelName   Channel name message is sent on.
      * @return  Json serialized UDP packet.
      */
-    protected UDPPacket SerializeData(Object obj, Type type, IKey key, String channelName) {
+    protected IPacket SerializeData(Object obj, Type type, IKey key, String channelName) {
         String data = gson.toJson(obj, type);
-        UDPPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
-        //return SerializeData(packet);
+        //IPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
+        IPacket packet = P2PGL.GetInstance().GetFactory().GetPacket(data, type.getTypeName(), key, channelName);
         return packet;
     }
 
@@ -197,16 +198,16 @@ public class UDPChannel implements ILocalChannel {
      * @param packet    packet to serialize
      * @return
      */
-    protected String SerializePacket(UDPPacket packet) {
-        return gson.toJson(packet, UDPPacket.class);
+    protected String SerializePacket(IPacket packet) {
+        return gson.toJson(packet, P2PGL.GetInstance().GetFactory().GetPacket().getClass());
     }
 
     /** Deserialize UDP Packet
      * @param ser   Json UDP Packet
      * @return  UDPPacket Object
      */
-    protected UDPPacket DeserializePacket(String ser) {
-        return gson.fromJson(ser, UDPPacket.class);
+    protected IPacket DeserializePacket(String ser) {
+        return gson.fromJson(ser, P2PGL.GetInstance().GetFactory().GetPacket().getClass());
     }
 
     /** Send a message to all clients in the channel (profile cache)
@@ -246,8 +247,8 @@ public class UDPChannel implements ILocalChannel {
     public  <T> T ReadNext() throws ClassNotFoundException {
         if(incomingQueue.isEmpty())
             return null;
-        UDPPacket packet = incomingQueue.remove();
-        return gson.fromJson(packet.getMessage(), (Type)Class.forName(packet.GetType()));
+        IPacket packet = incomingQueue.remove();
+        return gson.fromJson(packet.GetMessage(), (Type)Class.forName(packet.GetType()));
     }
 
     /** Read next object in the queue without removing it.
@@ -256,8 +257,8 @@ public class UDPChannel implements ILocalChannel {
      * @throws ClassNotFoundException   Object cannot be cast to any type found.
      */
     public <T> T PeekNext() throws ClassNotFoundException{
-        UDPPacket packet = incomingQueue.peek();
-        return gson.fromJson(packet.getMessage(), (Type)Class.forName(packet.GetType()));
+        IPacket packet = incomingQueue.peek();
+        return gson.fromJson(packet.GetMessage(), (Type)Class.forName(packet.GetType()));
     }
 
     /**
@@ -291,9 +292,9 @@ public class UDPChannel implements ILocalChannel {
                         socket.receive(receivedPacket);
                         byte[] receivedData = receivedPacket.getData();
                         String serializedData = new String(receivedData, 0, receivedPacket.getLength());
-                        UDPPacket packet = DeserializePacket(serializedData);
+                        IPacket packet = DeserializePacket(serializedData);
                         if(packet.GetChannel().equals(channelName)) {
-                            if(packet.getMessage() != "ack")
+                            if(packet.GetMessage() != "ack")
                                 incomingQueue.add(packet);
 
                             /* Listeners require extra processing so are run in a separate thread
@@ -324,8 +325,8 @@ public class UDPChannel implements ILocalChannel {
                     }
                 }
                 if(!listening) {
-                    socket.disconnect();
                     socket.close();
+                    socket.disconnect();
                 }
         }
 
@@ -336,13 +337,15 @@ public class UDPChannel implements ILocalChannel {
          *      is called, to stop further resends.
          * @param packet
          */
-        private void ProcessAck(UDPPacket packet) throws IOException {
-            if(packet.getMessage().equals("ack")) {
+        private void ProcessAck(IPacket packet) throws IOException {
+            if(packet.GetMessage().equals("ack")) {
                 ackMessageOperation.AckReceived(packet.GetAckKey());
             }
             else {
-                UDPPacket ackPacket = new UDPPacket("ack", "", profile.GetKey(), channelName);
-                ackPacket.SetAck(packet.GetAckKey());
+                //IPacket ackPacket = new UDPPacket("ack", "", profile.GetKey(), channelName);
+                IPacket ackPacket = P2PGL.GetInstance().GetFactory()
+                        .GetPacket("ack", "", profile.GetKey(), channelName);
+                ackPacket.SetAckKey(packet.GetAckKey());
                 Send(profileCache.Get(packet.GetSender()), ackPacket);
             }
         }

@@ -2,8 +2,11 @@ package P2PGL;
 
 import P2PGL.Config.AckMessageConfig;
 import P2PGL.Config.IAckMessageConfig;
+import P2PGL.Config.KademliaConfig;
 import P2PGL.Connection.HybridConnection;
 import P2PGL.Connection.IHybridConnection;
+import P2PGL.UDP.IPacket;
+import P2PGL.UDP.UDPPacket;
 import P2PGL.Util.ISerializedData;
 import P2PGL.DHT.KademliaFacade;
 import P2PGL.Util.SerializedData;
@@ -13,6 +16,8 @@ import P2PGL.Profile.ProfileCache;
 import P2PGL.UDP.UDPChannel;
 import P2PGL.Util.IKey;
 import P2PGL.Util.Key;
+
+import java.io.File;
 
 /**
  * Factory to create objects for setting up a Kademlia DHT.
@@ -74,4 +79,16 @@ public class P2PGLFactory implements IP2PGLFactory {
      * @return Ack Message Configuration.
      */
     public IAckMessageConfig GetAckConfig() { return new AckMessageConfig(); }
+
+    public IPacket GetPacket(String message, String type, IKey sender, String channel) {
+        return new UDPPacket(message, type, sender, channel);
+    }
+
+    public IPacket GetPacket() {
+        return new UDPPacket();
+    }
+
+    public KademliaConfig GetDHTConfig() {
+        return new KademliaConfig(60000L, 2000L, 2000L, 10, 5, 3, 1);
+    }
 }

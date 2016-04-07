@@ -8,8 +8,8 @@ import P2PGL.Util.IKey;
  */
 public class AckMessage {
 
-    private UDPPacket packet;
-    public UDPPacket GetPacket() { return packet; }
+    private IPacket packet;
+    public IPacket GetPacket() { return packet; }
 
     private IProfile profile;
     public IProfile GetProfile() { return profile; }
@@ -22,7 +22,7 @@ public class AckMessage {
     public int GetResends() { return resends; }
     public void IncrementResends() { resends++; }
 
-    public AckMessage(UDPPacket packet, IProfile profile) {
+    public AckMessage(IPacket packet, IProfile profile) {
         this.packet = packet;
         this.profile = profile;
     }

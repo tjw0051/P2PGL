@@ -4,10 +4,10 @@
     <exclude-output />
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/UnitTests" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Kademlia" level="project" />
     <orderEntry type="library" name="gson-2.5" level="project" />
     <orderEntry type="module-library">
       <library>
@@ -28,7 +28,7 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="jackson-core-2.7.2" level="project" />
-    <orderEntry type="library" name="jackson-databind-2.7.2" level="project" />
+    <orderEntry type="library" name="Kademlia-1.0" level="project" />
+    <orderEntry type="library" name="Kademlia (2)" level="project" />
   </component>
 </module>

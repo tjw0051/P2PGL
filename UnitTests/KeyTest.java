@@ -1,5 +1,3 @@
-package UnitTests;
-
 import P2PGL.Util.Key;
 import kademlia.node.KademliaId;
 import org.junit.Test;

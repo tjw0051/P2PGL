@@ -51,7 +51,12 @@ public class KademliaFacade implements IDHTFacade {
      */
     @Override
     public void Connect(String serverName, InetAddress serverAddress, int serverPort) throws IOException{
-        node = new JKademliaNode(name, key, port);
+
+        node = new JKademliaNode(name,
+                new Node(key, InetAddress.getLoopbackAddress(), port),
+                port,
+                P2PGL.GetInstance().GetFactory().GetDHTConfig());
+        //node = new JKademliaNode(name, key, port);
         Node bootstrapNode = new Node(new KademliaId(PadKey(serverName)), serverAddress, serverPort);
         node.bootstrap(bootstrapNode);
     }
@@ -77,6 +82,7 @@ public class KademliaFacade implements IDHTFacade {
      */
     @Override
     public void Disconnect() throws IOException{
+        node.stopRefreshOperation();
         node.shutdown(false);
         node = null;
     }

@@ -92,8 +92,8 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     //TODO: Remove profile and other pieces of player.
     public void Disconnect() throws IOException {
         try {
-            dht.Disconnect();
             localChannel.Stop();
+            dht.Disconnect();
         } catch(IOException ioe) {
             ioe.printStackTrace();
             throw ioe;

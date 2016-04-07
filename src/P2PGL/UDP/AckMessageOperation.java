@@ -57,7 +57,7 @@ public class AckMessageOperation implements Runnable {
      * @param packet
      * @param profile
      */
-    public void Add(UDPPacket packet, IProfile profile) {
+    public void Add(IPacket packet, IProfile profile) {
         newPackets.add(new AckMessage(packet, profile));
         if(!running) {
             running = true;

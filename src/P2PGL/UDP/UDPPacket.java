@@ -5,12 +5,12 @@ import P2PGL.Util.IKey;
 /**
  * Created by t_j_w on 21/03/2016.
  */
-public class UDPPacket {
+public class UDPPacket implements IPacket {
     /**
      * JSON serialization of type.
      */
     private String message;
-    public String getMessage() { return message; }
+    public String GetMessage() { return message; }
 
     /**
      * Deserialized Type of message.
@@ -31,7 +31,7 @@ public class UDPPacket {
     public String GetChannel() { return channel; }
 
     private IKey ackKey;
-    public void SetAck(IKey key) { ackKey = key; }
+    public void SetAckKey(IKey key) { ackKey = key; }
     public IKey GetAckKey() { return ackKey; }
 
     /** UDP packet for storing a Json serialized data and type name.
@@ -49,7 +49,5 @@ public class UDPPacket {
         this.channel = channel;
     }
 
-
-
-
+    public UDPPacket() {}
 }

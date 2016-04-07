@@ -1,5 +1,3 @@
-package UnitTests;
-
 import P2PGL.Util.IKey;
 import P2PGL.Util.Key;
 import P2PGL.Profile.IProfile;

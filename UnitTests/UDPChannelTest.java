@@ -1,6 +1,5 @@
-package UnitTests;
-
 import P2PGL.UDP.ILocalChannel;
+import P2PGL.UDP.IPacket;
 import P2PGL.UDP.UDPPacket;
 import P2PGL.Util.Key;
 import P2PGL.Profile.IProfile;
@@ -107,7 +106,7 @@ public class UDPChannelTest extends UDPChannel{
         serverChannel.Add(clientProfile);
         clientChannel.Add(serverProfile);
 
-        UDPPacket udpPacket = new UDPPacket("hello", String.class.getTypeName(),
+        IPacket udpPacket = new UDPPacket("hello", String.class.getTypeName(),
                 clientProfile.GetKey(), "channel0");
         try {
             clientChannel.SendAck(serverProfile, "hello", String.class);
