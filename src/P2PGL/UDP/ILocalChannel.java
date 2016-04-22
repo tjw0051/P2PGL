@@ -6,6 +6,8 @@ import P2PGL.Profile.IProfile;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 
 /**
  * Created by t_j_w on 07/03/2016.
@@ -33,6 +35,13 @@ public interface ILocalChannel {
      * @throws IOException  Error sending message to peer
      */
     void Send(IProfile profile, Object obj, Type type) throws IOException;
+
+    /** Send a message to a single peer
+     * @param profile   Profile of peer to send message to
+     * @param udpPacket Packet to send
+     * @throws IOException  Error sending message to peer
+     */
+    public void Send(IProfile profile, IPacket udpPacket) throws IOException;
 
     /** Send a message requiring acknowledgement of receipt to a single peer
      * @param profile   Profile of peer to send message to
@@ -72,10 +81,14 @@ public interface ILocalChannel {
      */
     void Add(IProfile profile);
 
-    /** Start listening to incoming messages
-     * @param channelName   Channel name to listen on
+    /** Set the current user profile.
+     * @param profile to set.
      */
-    void Listen(String channelName);
+    void SetProfile(IProfile profile);
+
+    /** Start listening to incoming messages
+     */
+    void Listen();
 
     /**
      * Clear incoming messages queue.

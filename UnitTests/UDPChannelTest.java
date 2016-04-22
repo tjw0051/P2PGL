@@ -1,6 +1,8 @@
+import P2PGL.EventListener.NewContactListener;
 import P2PGL.UDP.ILocalChannel;
 import P2PGL.UDP.IPacket;
 import P2PGL.UDP.UDPPacket;
+import P2PGL.Util.IKey;
 import P2PGL.Util.Key;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.Profile;
@@ -12,6 +14,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -22,6 +26,8 @@ public class UDPChannelTest extends UDPChannel{
 
     UDPChannel udpChannel;
 
+
+
     public UDPChannelTest() {
         super(new Profile(InetAddress.getLoopbackAddress(), 0, ""));
     }
@@ -30,7 +36,7 @@ public class UDPChannelTest extends UDPChannel{
     public void testListen() throws Exception {
         String msg = "hello";
         CreateUDPChannel(6000);
-        udpChannel.Listen("channel");
+        udpChannel.Listen();
         //Thread.sleep(50);
         DatagramSocket serverSock = new DatagramSocket();
         //serverSock.connect(InetAddress.getLoopbackAddress(), 5000);
@@ -62,8 +68,9 @@ public class UDPChannelTest extends UDPChannel{
     public void testSend() {
         CreateUDPChannel(5002);
         IProfile serverProfile = new Profile(InetAddress.getLoopbackAddress(), 6010, "channel_1");
+        serverProfile.SetLocalChannel("channel");
         UDPChannel serverUDP = new UDPChannel(serverProfile, 6010);
-        serverUDP.Listen("channel");
+        serverUDP.Listen();
         //UDPChannel is profile port + 1 : profile must be set to 5009.
         Profile profile = new Profile(InetAddress.getLoopbackAddress(), 6009, "channel_0");
         try {
@@ -100,8 +107,8 @@ public class UDPChannelTest extends UDPChannel{
         IProfile serverProfile = new Profile(InetAddress.getLoopbackAddress(), 6017, 6018, "channel0", "server", new Key());
         UDPChannel serverChannel = new UDPChannel(serverProfile);
 
-        serverChannel.Listen("channel0");
-        clientChannel.Listen("channel0");
+        serverChannel.Listen();
+        clientChannel.Listen();
 
         serverChannel.Add(clientProfile);
         clientChannel.Add(serverProfile);
@@ -125,19 +132,66 @@ public class UDPChannelTest extends UDPChannel{
         assertTrue(message.equals("hello"));
     }
 
-    @Test
-    public void testReadNext() throws Exception {
-
-    }
-
-    @Test
-    public void testPeekNext() throws Exception {
-
-    }
-
     private void CreateUDPChannel(int port) {
         IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 6010, "channel_0");
         prof.SetLocalChannel("channel");
         udpChannel = new UDPChannel(prof, port);
+    }
+
+    @Test
+    public void testNewContactListener() {
+        DummyListener listener = new DummyListener();
+
+        IProfile prof1 = new Profile(InetAddress.getLoopbackAddress(), 6030, 6031,
+                "channel_0", "prof1", new Key());
+        IProfile prof2 = new Profile(InetAddress.getLoopbackAddress(), 6032, 6033,
+                "channel_0", "prof2", new Key());
+        IProfile prof3 = new Profile(InetAddress.getLoopbackAddress(), 6034, 6035,
+                "channel_0", "prof3", new Key());
+        UDPChannel channel1 = new UDPChannel(prof1);
+        UDPChannel channel2 = new UDPChannel(prof2);
+        UDPChannel channel3 = new UDPChannel(prof3);
+
+        channel1.Listen();
+        channel2.Listen();
+        channel3.Listen();
+        channel1.AddContactListener(listener);
+
+
+        channel2.Add(prof1);
+        channel2.Add(prof3);
+
+
+
+        channel3.Add(prof1);
+        channel3.Add(prof2);
+        long time = System.currentTimeMillis();
+        while(System.currentTimeMillis() - time < 1000) {}
+        try {
+            channel2.Broadcast("Hello", String.class);
+            channel3.Broadcast("Hello3", String.class);
+        } catch (IOException ioe) {
+            fail("Error broadcasting");
+        }
+        time = System.currentTimeMillis();
+        while(System.currentTimeMillis() - time < 1000) {}
+
+        assertTrue(listener.listenerKeys.contains(prof2.GetKey()));
+        assertTrue(listener.listenerKeys.contains(prof3.GetKey()));
+    }
+
+    public class DummyListener implements NewContactListener {
+
+        public List<IKey> listenerKeys;
+
+        public DummyListener() {
+            listenerKeys = new ArrayList<>();
+        }
+
+        @Override
+        public void NewContactListener(IKey key) {
+            System.out.println("New contact added");
+            listenerKeys.add(key);
+        }
     }
 }

@@ -57,7 +57,9 @@ public class KademliaFacade implements IDHTFacade {
                 port,
                 P2PGL.GetInstance().GetFactory().GetDHTConfig());
         //node = new JKademliaNode(name, key, port);
-        Node bootstrapNode = new Node(new KademliaId(PadKey(serverName)), serverAddress, serverPort);
+        Node bootstrapNode = new Node(new KademliaId(
+                P2PGL.GetInstance().GetFactory().GetKey().Format(serverName)),
+                        serverAddress, serverPort);
         node.bootstrap(bootstrapNode);
     }
 
@@ -74,7 +76,10 @@ public class KademliaFacade implements IDHTFacade {
      * @return  True if node is running
      */
     public boolean isConnected() {
-        return node.getServer().isRunning();
+        if(node != null)
+            return node.getServer().isRunning();
+        else
+            return false;
     }
 
     /** Shutdown Kademlia node

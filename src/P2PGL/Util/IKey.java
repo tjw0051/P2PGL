@@ -31,5 +31,6 @@ public interface IKey {
      * @param key   Key to compare to this key
      * @return  True if keys are equal
      */
-    boolean Equals(IKey key);
+    @Override
+    boolean equals(Object key);
 }

@@ -1,4 +1,6 @@
 import P2PGL.Connection.IHybridConnection;
+import P2PGL.P2PGL;
+import P2PGL.IP2PGLFactory;
 import P2PGL.P2PGLFactory;
 import P2PGL.Profile.IProfile;
 import P2PGL.Profile.IProfileCache;
@@ -15,21 +17,23 @@ import java.util.Arrays;
 import static org.junit.Assert.*;
 
 /**
- * Created by t_j_w on 01/04/2016.
+ * Test that P2PGL's Factory is returning valid instances of objects.
+ * Useful to run if a new factory is injected.
  */
 public class P2PGLFactoryTest {
 
     @Test
     public void testGetHybridConnection() {
-        P2PGLFactory p2PGLFactory = new P2PGLFactory();
-        IProfile prof = new Profile(InetAddress.getLoopbackAddress(), 2500, 2501, "channel", "name", new Key());
+        IP2PGLFactory p2PGLFactory = P2PGL.GetInstance().GetFactory();
+        IProfile prof = new Profile(InetAddress.getLoopbackAddress(),
+                2500, 2501, "channel", "name", new Key());
         IHybridConnection conn = p2PGLFactory.GetHybridConnection(prof);
         assertTrue("HybridConnection was not created", conn != null);
     }
 
     @Test
     public void testGetSerializedData() throws Exception {
-        P2PGLFactory p2PGLFactory = new P2PGLFactory();
+        IP2PGLFactory p2PGLFactory = P2PGL.GetInstance().GetFactory();
         ISerializedData data = p2PGLFactory.GetSerializedData("data", "typename");
         assertTrue("SerializedData was not created correctly", data.GetData().equals("data") &&
         data.GetType().equals("typename"));
@@ -37,21 +41,21 @@ public class P2PGLFactoryTest {
 
     @Test
     public void testGetProfileCache() throws Exception {
-        P2PGLFactory p2PGLFactory = new P2PGLFactory();
+        IP2PGLFactory p2PGLFactory = P2PGL.GetInstance().GetFactory();
         IProfileCache cache = p2PGLFactory.GetProfileCache();
         assertTrue("Profile cache not created", cache != null);
     }
 
     @Test
     public void testGetKey() throws Exception {
-        P2PGLFactory p2PGLFactory = new P2PGLFactory();
+        IP2PGLFactory p2PGLFactory = P2PGL.GetInstance().GetFactory();
         IKey key = p2PGLFactory.GetKey();
         assertTrue("Key not created", key != null);
     }
 
     @Test
     public void testGetKeyParams() throws Exception {
-        P2PGLFactory p2PGLFactory = new P2PGLFactory();
+        IP2PGLFactory p2PGLFactory = P2PGL.GetInstance().GetFactory();
         KademliaId id = new KademliaId();
         IKey key = p2PGLFactory.GetKey(id.getBytes());
         assertTrue("Key not initialized correctly", Arrays.equals(key.ToBytes(), id.getBytes()));
@@ -59,7 +63,7 @@ public class P2PGLFactoryTest {
 
     @Test
     public void testGetKeys() throws Exception {
-        P2PGLFactory p2PGLFactory = new P2PGLFactory();
+        IP2PGLFactory p2PGLFactory = P2PGL.GetInstance().GetFactory();
         IKey[] keys = p2PGLFactory.GetKeys(10);
         assertTrue("keys not created", keys != null);
     }

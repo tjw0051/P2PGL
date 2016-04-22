@@ -6,6 +6,7 @@ import P2PGL.Profile.IProfile;
 import P2PGL.Util.IKey;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,17 +18,17 @@ public class AckMessageOperation implements Runnable {
     private final long timeout;
     private final int maxResends;
 
-    private UDPChannel udpChannel;
+    protected ILocalChannel localChannel;
 
-    private List<AckMessage> packets;
-    private List<AckMessage> newPackets;
+    protected List<AckMessage> packets;
+    protected List<AckMessage> newPackets;
 
-    private List<IKey> ackKeys;
-    private List<IKey> newAckKeys;
+    protected List<IKey> ackKeys;
+    protected List<IKey> newAckKeys;
 
     private boolean running;
 
-    public AckMessageOperation(UDPChannel udpChannel) {
+    public AckMessageOperation(ILocalChannel localChannel) {
         IAckMessageConfig config = P2PGL.GetInstance().GetFactory().GetAckConfig();
         this.timeout = config.GetTimeout();
         this.maxResends = config.GetResends();
@@ -35,7 +36,7 @@ public class AckMessageOperation implements Runnable {
         newPackets = new ArrayList<>();
         ackKeys = new ArrayList<>();
         newAckKeys = new ArrayList<>();
-        this.udpChannel = udpChannel;
+        this.localChannel = localChannel;
         running = false;
     }
 
@@ -50,6 +51,12 @@ public class AckMessageOperation implements Runnable {
             } catch (IOException ioe) {
                 //TODO: handle - error sending at udp.send
             }
+        }
+        if(!running) {
+            packets.clear();
+            newPackets.clear();
+            ackKeys.clear();
+            newAckKeys.clear();
         }
     }
 
@@ -106,7 +113,7 @@ public class AckMessageOperation implements Runnable {
             Iterator keyIter = ackKeys.iterator();
             while (keyIter.hasNext() && found == false) {
                 IKey ackKey = (IKey) keyIter.next();
-                if(ackKey.Equals(message.GetPacket().GetAckKey())) {
+                if(ackKey.equals(message.GetPacket().GetAckKey())) {
                     found = true;
                     keyIter.remove();
                 }
@@ -123,13 +130,12 @@ public class AckMessageOperation implements Runnable {
 
                 if (message.GetResends() >= maxResends) {
                     iter.remove();
-                } else if (currentTime - message.GetTimeSent() > timeout) {
-                    udpChannel.Send(message.GetProfile(), message.GetPacket());
+                } else if ((currentTime - message.GetTimeSent()) > timeout) {
+                    localChannel.Send(message.GetProfile(), message.GetPacket());
                     message.SetTimeSent(currentTime);
                     message.IncrementResends();
                 }
             }
-
         }
     }
 

@@ -5,6 +5,8 @@ import P2PGL.Config.IAckMessageConfig;
 import P2PGL.Config.KademliaConfig;
 import P2PGL.Connection.HybridConnection;
 import P2PGL.Connection.IHybridConnection;
+import P2PGL.DHT.IDHTFacade;
+import P2PGL.UDP.ILocalChannel;
 import P2PGL.UDP.IPacket;
 import P2PGL.UDP.UDPPacket;
 import P2PGL.Util.ISerializedData;
@@ -31,9 +33,25 @@ public class P2PGLFactory implements IP2PGLFactory {
      */
     public IHybridConnection GetHybridConnection(IProfile profile) {
         IHybridConnection conn = new HybridConnection(profile,
-                new KademliaFacade(profile),
-                new UDPChannel(profile, profile.GetLocalChannelPort()));
+                GetDHTFacade(profile),
+                GetLocalChannel(profile));
         return conn;
+    }
+
+    /** Factory method for creating DHT Facade concretion.
+     * @param profile Config for setting up DHT
+     * @return  Newly created DHT Facade.
+     */
+    public IDHTFacade GetDHTFacade(IProfile profile) {
+        return new KademliaFacade(profile);
+    }
+
+    /** Factory method for creating Local Channel concretion.
+     * @param profile Config for setting up Local Channel
+     * @return  Newly created Local Channel.
+     */
+    public ILocalChannel GetLocalChannel(IProfile profile) {
+        return new UDPChannel(profile, profile.GetLocalChannelPort());
     }
 
     /** Creates a SerializedData instance

@@ -91,13 +91,15 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
      */
     //TODO: Remove profile and other pieces of player.
     public void Disconnect() throws IOException {
-        try {
-            localChannel.Stop();
-            dht.Disconnect();
-        } catch(IOException ioe) {
-            ioe.printStackTrace();
-            throw ioe;
+        if(dht.isConnected()) {
+            try {
+                dht.Disconnect();
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+                throw ioe;
+            }
         }
+        localChannel.Stop();
     }
 
     /** Join a local channel with name channelName.
@@ -114,6 +116,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
         //Update profile with new channel
         profile.SetLocalChannel(channelName);
         StoreProfile();
+        localChannel.SetProfile(profile);
 
         //Add contacts from new channel
         List<IProfile> profiles = GetProfiles(ListUsers());
@@ -121,7 +124,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
             if(profile.GetLocalChannelName().equals(channelName))
                 localChannel.Add(profile);
         }
-        localChannel.Listen(channelName);
+        localChannel.Listen();
     }
 
     /** Broadcast a message to all peers in the local channel.
@@ -241,7 +244,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
         for(int i = 0; i < keys.length; i++) {
             try {
                 IProfile prof = GetProfile(keys[i]);
-                if(prof != null && !prof.GetKey().Equals(profile.GetKey()))
+                if(prof != null && !prof.GetKey().equals(profile.GetKey()))
                     profiles.add(prof);
             } catch (IOException ioe) {
                 throw ioe;
@@ -256,7 +259,9 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     @Override
     public void NewContactListener(IKey key) {
         try {
-            localChannel.Add(GetProfile(key));
+            IProfile prof = GetProfile(key);
+            if(prof != null)
+                localChannel.Add(prof);
         } catch (IOException ioe) {
         }
     }

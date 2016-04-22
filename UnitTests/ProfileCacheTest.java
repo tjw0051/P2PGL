@@ -26,7 +26,7 @@ public class ProfileCacheTest {
     }
 
     @Test
-    public void Get() {
+    public void testGet() {
         ProfileCache profileCache = AddEntry();
         IProfile prof = profileCache.Get("hello");
         assertTrue(prof != null);

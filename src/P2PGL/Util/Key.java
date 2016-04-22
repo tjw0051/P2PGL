@@ -2,6 +2,7 @@ package P2PGL.Util;
 
 import kademlia.node.KademliaId;
 
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 
 /**
@@ -44,20 +45,33 @@ public class Key implements IKey {
      * @return  Formatted String
      */
     public String Format(String key) {
-        if(key.length() > 20)
-            throw new IllegalArgumentException("Key must be < 20 characters long");
-        if(key.length() < 20)
-            return String.format("%-20s", key).replace(' ', '0');
+        String newKey = key;
+        if(key == "")
+            throw new IllegalArgumentException("Key cannot be empty string");
+        if(newKey.length() > 20)
+            newKey = newKey.substring(0, 19);
+        if(newKey.length() < 20)
+            return String.format("%-20s", newKey).replace(' ', '0');
         else
-            return key;
+            return newKey;
     }
 
     /**Check for equality between two keys.
      * @param key   Key to compare to this key
      * @return  True if keys are equal
      */
-    public boolean Equals(IKey key) {
-        return Arrays.equals(this.ToBytes(), key.ToBytes());
+    @Override
+    public boolean equals(Object key) {
+        if(this == key)
+            return true;
+
+        if(key == null)
+            return false;
+
+        if(!Key.class.isAssignableFrom(key.getClass()))
+            return false;
+
+        return Arrays.equals(this.ToBytes(), ((IKey)key).ToBytes());
     }
 
     /** The key proceeding this key.

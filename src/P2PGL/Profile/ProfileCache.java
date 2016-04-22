@@ -77,7 +77,7 @@ public class ProfileCache implements IProfileCache {
 
     public IProfile Get(IKey key) {
         for(Map.Entry<Long, IProfile> entry : profilesAtTime.entrySet()) {
-            if(entry.getValue().GetKey().Equals(key)) {
+            if(entry.getValue().GetKey().equals(key)) {
                 return entry.getValue();
             }
         }
@@ -93,7 +93,7 @@ public class ProfileCache implements IProfileCache {
         while(iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
             //if(((IProfile)entry.getValue()).GetKey().ToBytes() == key.ToBytes()) {
-            if(((IProfile)entry.getValue()).GetKey().Equals(key))
+            if(((IProfile)entry.getValue()).GetKey().equals(key))
                 return true;
         }
         return false;

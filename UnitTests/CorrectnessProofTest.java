@@ -15,15 +15,15 @@ import java.util.Random;
 /**
  * Created by t_j_w on 07/04/2016.
  */
-public class PerformanceTests {
+public class CorrectnessProofTest {
     List<IHybridConnection> connections;
 
     int startPort = 40000;
     int count = 0;
     int profileRequests = 200;
-    //int latency = 100;
 
-    @Test
+    //  Test Disabled for regular unit and integration testing
+    //@Test
     public void DHTGetPerformanceTest() {
         long total = 0;
 
@@ -124,6 +124,11 @@ public class PerformanceTests {
         return total;
     }
 
+    /** Create a hybrid connection using name and port for profile
+     * @param name  Name of connection
+     * @param port  Port for connection
+     * @return
+     */
     public IHybridConnection CreateConnection(String name, int port) {
         IProfile profile = new Profile(InetAddress.getLoopbackAddress(), port, name);
         return P2PGL.GetInstance().GetFactory().GetHybridConnection(profile);

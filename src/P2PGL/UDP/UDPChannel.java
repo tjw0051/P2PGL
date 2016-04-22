@@ -64,11 +64,17 @@ public class UDPChannel implements ILocalChannel {
         ackMessageOperationThread = new Thread(ackMessageOperation);
     }
 
-    /** Start listening to incoming messages
-     * @param channelName   Channel name to listen on
+    /** Set the current user profile
+     * @param profile to set.
      */
-    public void Listen(String channelName) {
-        this.channelName = channelName;
+    public void SetProfile(IProfile profile) {
+        this.profile = profile;
+    }
+
+    /** Start listening to incoming messages
+     */
+    public void Listen() {
+        this.channelName = profile.GetLocalChannelName();
         listenThread = new Thread(new ListenThread(port));
         listening = true;
         listenThread.start();
@@ -92,11 +98,11 @@ public class UDPChannel implements ILocalChannel {
      */
     protected void MessageReceived(IPacket packet) {
         try {
-            Class C = Class.forName(packet.GetType());
-            Object obj = gson.fromJson(packet.GetMessage(), C);
+            Class c = Class.forName(packet.GetType());
+            Object obj = gson.fromJson(packet.GetMessage(), c);
 
             for(MessageReceivedListener listener : messageReceivedListeners) {
-                listener.MessageReceivedListener(obj, C, packet.GetSender());
+                listener.MessageReceivedListener(obj, c, packet.GetSender());
             }
         } catch (ClassNotFoundException cnfe) {
         }
@@ -146,14 +152,6 @@ public class UDPChannel implements ILocalChannel {
      */
     public void Send(IProfile profile, Object obj, Type type) throws IOException{
         Send(profile, SerializeData(obj, type, this.profile.GetKey(), this.profile.GetLocalChannelName()));
-        /*
-        byte[] bytes = SerializePacket(
-                SerializeData(obj, type, this.profile.GetKey(),
-                        this.profile.GetLocalChannelName())).getBytes();
-        DatagramSocket socket = new DatagramSocket();
-        DatagramPacket packet = new DatagramPacket(bytes, bytes.length, profile.GetIPAddress(), profile.GetLocalChannelPort());
-        socket.send(packet);
-        */
     }
 
     /** Send a message to a single peer
@@ -289,36 +287,40 @@ public class UDPChannel implements ILocalChannel {
 
                 while(listening) {
                     try {
-                        socket.receive(receivedPacket);
-                        byte[] receivedData = receivedPacket.getData();
-                        String serializedData = new String(receivedData, 0, receivedPacket.getLength());
-                        IPacket packet = DeserializePacket(serializedData);
-                        if(packet.GetChannel().equals(channelName)) {
-                            if(packet.GetMessage() != "ack")
-                                incomingQueue.add(packet);
+                        if(receivedPacket != null) {
+                            socket.receive(receivedPacket);
+                            //System.out.println("Packet Received");
+                            byte[] receivedData = receivedPacket.getData();
+                            String serializedData = new String(receivedData, 0, receivedPacket.getLength());
+                            IPacket packet = DeserializePacket(serializedData);
+                            if (packet.GetChannel().equals(channelName)) {
+                                //System.out.println("correct channel");
+                                if (packet.GetMessage() != "ack")
+                                    incomingQueue.add(packet);
 
                             /* Listeners require extra processing so are run in a separate thread
                                 to prevent ListenThread from blocking */
-                            new Thread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    MessageReceived(packet);
+                                //new Thread(new Runnable() {
+                                    //@Override
+                                    //public void run() {
+                                        MessageReceived(packet);
 
-                                    if (!profileCache.Contains(packet.GetSender()))
-                                        NewContactListener(packet.GetSender());
-                                    else {
-                                        //process ack messages
-                                        if (packet.GetAckKey() != null) {
-                                            try {
-                                                ProcessAck(packet);
-                                            } catch (IOException ioe) {
-                                                //TODO: handle - error sending ack
+                                        if (!profileCache.Contains(packet.GetSender()))
+                                            NewContactListener(packet.GetSender());
+                                        else {
+                                            //process ack messages
+                                            if (packet.GetAckKey() != null) {
+                                                try {
+                                                    ProcessAck(packet);
+                                                } catch (IOException ioe) {
+                                                    //TODO: handle - error sending ack
+                                                }
                                             }
-                                        }
 
-                                    }
-                                }
-                            }).start();
+                                        }
+                                    //}
+                                //}).start();
+                            }
                         }
                     } catch(IOException ioe) {
                         //TODO Handle - thrown at socket.receive - error receiving
@@ -355,6 +357,7 @@ public class UDPChannel implements ILocalChannel {
      * Stop listening to incoming messages
      */
     public void Stop() {
+        ackMessageOperation.Stop();
         listening = false;
     }
 }
