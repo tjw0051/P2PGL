@@ -73,11 +73,19 @@ public class UDPChannel implements ILocalChannel {
 
     /** Start listening to incoming messages
      */
-    public void Listen() {
+    public void Listen() throws SocketException {
         this.channelName = profile.GetLocalChannelName();
-        listenThread = new Thread(new ListenThread(port));
+        boolean completed;
+        ListenThread listener = new ListenThread(port);
+        listenThread = new Thread(listener);
         listening = true;
         listenThread.start();
+        while(listener.connected != true) {
+            if(listener.exceptionThrown != null) {
+                throw (SocketException)listener.exceptionThrown;
+            }
+        }
+
         //Start listening to messages, create event for receive trigger.
     }
 
@@ -272,6 +280,9 @@ public class UDPChannel implements ILocalChannel {
     protected class ListenThread implements Runnable{
         DatagramSocket socket;
         int port;
+        public boolean connected;
+        public Exception exceptionThrown;
+
         public ListenThread(int port) {
             this.port = port;
         }
@@ -279,7 +290,9 @@ public class UDPChannel implements ILocalChannel {
         public void run() {
                 try {
                     socket = new DatagramSocket(port);
+                    connected = true;
                 } catch (SocketException se) {
+                    exceptionThrown = se;
                     //TODO: Handle socket exception
                 }
                 byte[] buffer = new byte[10000];
@@ -329,6 +342,8 @@ public class UDPChannel implements ILocalChannel {
                 if(!listening) {
                     socket.close();
                     socket.disconnect();
+                    connected = false;
+                    exceptionThrown = null;
                 }
         }
 

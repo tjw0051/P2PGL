@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketException;
 
 /**
  * Created by t_j_w on 07/03/2016.
@@ -88,7 +89,7 @@ public interface ILocalChannel {
 
     /** Start listening to incoming messages
      */
-    void Listen();
+    void Listen() throws SocketException;
 
     /**
      * Clear incoming messages queue.
