@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +71,11 @@ public class UDPChannelTest extends UDPChannel{
         IProfile serverProfile = new Profile(InetAddress.getLoopbackAddress(), 6010, "channel_1");
         serverProfile.SetLocalChannel("channel");
         UDPChannel serverUDP = new UDPChannel(serverProfile, 6010);
-        serverUDP.Listen();
+        try {
+            serverUDP.Listen();
+        } catch(SocketException se) {
+            fail("Socket Exception");
+        }
         //UDPChannel is profile port + 1 : profile must be set to 5009.
         Profile profile = new Profile(InetAddress.getLoopbackAddress(), 6009, "channel_0");
         try {
@@ -106,9 +111,12 @@ public class UDPChannelTest extends UDPChannel{
 
         IProfile serverProfile = new Profile(InetAddress.getLoopbackAddress(), 6017, 6018, "channel0", "server", new Key());
         UDPChannel serverChannel = new UDPChannel(serverProfile);
-
-        serverChannel.Listen();
-        clientChannel.Listen();
+        try {
+            serverChannel.Listen();
+            clientChannel.Listen();
+        } catch (SocketException se) {
+            fail("Socket exception");
+        }
 
         serverChannel.Add(clientProfile);
         clientChannel.Add(serverProfile);
@@ -151,10 +159,13 @@ public class UDPChannelTest extends UDPChannel{
         UDPChannel channel1 = new UDPChannel(prof1);
         UDPChannel channel2 = new UDPChannel(prof2);
         UDPChannel channel3 = new UDPChannel(prof3);
-
-        channel1.Listen();
-        channel2.Listen();
-        channel3.Listen();
+        try {
+            channel1.Listen();
+            channel2.Listen();
+            channel3.Listen();
+        } catch (SocketException se) {
+            fail("Socket Exception");
+        }
         channel1.AddContactListener(listener);
 
 
@@ -166,7 +177,7 @@ public class UDPChannelTest extends UDPChannel{
         channel3.Add(prof1);
         channel3.Add(prof2);
         long time = System.currentTimeMillis();
-        while(System.currentTimeMillis() - time < 1000) {}
+        while(System.currentTimeMillis() - time < 2000) {}
         try {
             channel2.Broadcast("Hello", String.class);
             channel3.Broadcast("Hello3", String.class);
@@ -174,7 +185,7 @@ public class UDPChannelTest extends UDPChannel{
             fail("Error broadcasting");
         }
         time = System.currentTimeMillis();
-        while(System.currentTimeMillis() - time < 1000) {}
+        while(System.currentTimeMillis() - time < 2000) {}
 
         assertTrue(listener.listenerKeys.contains(prof2.GetKey()));
         assertTrue(listener.listenerKeys.contains(prof3.GetKey()));

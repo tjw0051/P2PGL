@@ -109,8 +109,10 @@ public class UDPChannel implements ILocalChannel {
             Class c = Class.forName(packet.GetType());
             Object obj = gson.fromJson(packet.GetMessage(), c);
 
-            for(MessageReceivedListener listener : messageReceivedListeners) {
-                listener.MessageReceivedListener(obj, c, packet.GetSender());
+            if(!messageReceivedListeners.isEmpty()) {
+                for (MessageReceivedListener listener : messageReceivedListeners) {
+                    listener.MessageReceivedListener(obj, c, packet.GetSender());
+                }
             }
         } catch (ClassNotFoundException cnfe) {
         }
@@ -132,6 +134,7 @@ public class UDPChannel implements ILocalChannel {
      * @param key
      */
     protected void NewContactListener(IKey key) {
+        System.out.println("New Contact found");
         for(NewContactListener listener : newContactListeners) {
             listener.NewContactListener(key);
         }
@@ -292,6 +295,7 @@ public class UDPChannel implements ILocalChannel {
                     socket = new DatagramSocket(port);
                     connected = true;
                 } catch (SocketException se) {
+                    System.out.println("Socket exception creating socket");
                     exceptionThrown = se;
                     //TODO: Handle socket exception
                 }
@@ -302,12 +306,12 @@ public class UDPChannel implements ILocalChannel {
                     try {
                         if(receivedPacket != null) {
                             socket.receive(receivedPacket);
-                            //System.out.println("Packet Received");
+                            System.out.println("Packet Received");
                             byte[] receivedData = receivedPacket.getData();
                             String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                             IPacket packet = DeserializePacket(serializedData);
                             if (packet.GetChannel().equals(channelName)) {
-                                //System.out.println("correct channel");
+                                System.out.println("correct channel");
                                 if (packet.GetMessage() != "ack")
                                     incomingQueue.add(packet);
 
@@ -326,6 +330,7 @@ public class UDPChannel implements ILocalChannel {
                                                 try {
                                                     ProcessAck(packet);
                                                 } catch (IOException ioe) {
+                                                    System.out.println("Error processing ack");
                                                     //TODO: handle - error sending ack
                                                 }
                                             }
@@ -337,6 +342,7 @@ public class UDPChannel implements ILocalChannel {
                         }
                     } catch(IOException ioe) {
                         //TODO Handle - thrown at socket.receive - error receiving
+                        System.out.println("Error receiving packets");
                     }
                 }
                 if(!listening) {
