@@ -74,6 +74,13 @@ public class Key implements IKey {
         return Arrays.equals(this.ToBytes(), ((IKey)key).ToBytes());
     }
 
+    @Override
+    public int hashCode() {
+        byte hashOffset = 22;
+        int hash = hashOffset + Arrays.hashCode(kademliaId.getBytes());
+        return hash;
+    }
+
     /** The key proceeding this key.
      * @see Key
      * @return  Key proceeding this key.

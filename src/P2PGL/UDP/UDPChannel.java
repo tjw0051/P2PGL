@@ -78,14 +78,17 @@ public class UDPChannel implements ILocalChannel {
         boolean completed;
         ListenThread listener = new ListenThread(port);
         listenThread = new Thread(listener);
+        listenThread.setDaemon(true);
         listening = true;
+
         listenThread.start();
-        while(listener.connected != true) {
-            if(listener.exceptionThrown != null) {
-                throw (SocketException)listener.exceptionThrown;
+        while(listener.isConnected() != true) {
+            //System.out.print("N");
+            if(listener.getExceptionThrown() != null) {
+                throw listener.getExceptionThrown();
             }
         }
-
+        //System.out.println("listener is connected for " + profile.GetName());
         //Start listening to messages, create event for receive trigger.
     }
 
@@ -115,6 +118,7 @@ public class UDPChannel implements ILocalChannel {
                 }
             }
         } catch (ClassNotFoundException cnfe) {
+            System.out.println("Class not found");
         }
 
     }
@@ -122,7 +126,7 @@ public class UDPChannel implements ILocalChannel {
     /** Add a listener to be informed when a message is received from an unknown key.
      * @param listener  Class implementing NewContactListener
      */
-    public void AddContactListener(NewContactListener listener) { newContactListeners.add(listener); }
+    public synchronized void AddContactListener(NewContactListener listener) { newContactListeners.add(listener); }
 
     /** Remove contact listener
      * @param listener listener to remove
@@ -133,7 +137,7 @@ public class UDPChannel implements ILocalChannel {
     /** Calls NewContactListeners when a message is received from an unknown contact.
      * @param key
      */
-    protected void NewContactListener(IKey key) {
+    protected synchronized void NewContactListener(IKey key) {
         System.out.println("New Contact found");
         for(NewContactListener listener : newContactListeners) {
             listener.NewContactListener(key);
@@ -224,7 +228,7 @@ public class UDPChannel implements ILocalChannel {
      * @param type  Type of obj.
      * @throws IOException  Error sending message.
      */
-    public void Broadcast(Object obj, Type type) throws IOException{
+    public void Broadcast(Object obj, Type type) throws IOException {
         Collection<IProfile> profiles = profileCache.Get();
         Iterator iter = profiles.iterator();
         while(iter.hasNext()) {
@@ -283,35 +287,38 @@ public class UDPChannel implements ILocalChannel {
     protected class ListenThread implements Runnable{
         DatagramSocket socket;
         int port;
-        public boolean connected;
-        public Exception exceptionThrown;
+        private boolean connected = false;
+        private SocketException exceptionThrown;
 
         public ListenThread(int port) {
             this.port = port;
         }
 
         public void run() {
+            //System.out.println("Running listener thread");
                 try {
                     socket = new DatagramSocket(port);
                     connected = true;
+                    //System.out.println("Socket created");
                 } catch (SocketException se) {
-                    System.out.println("Socket exception creating socket");
+                    //System.out.println("Socket exception creating socket");
+                    listening = false;
                     exceptionThrown = se;
                     //TODO: Handle socket exception
                 }
+
                 byte[] buffer = new byte[10000];
                 DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
-
                 while(listening) {
                     try {
                         if(receivedPacket != null) {
                             socket.receive(receivedPacket);
-                            System.out.println("Packet Received");
+                            //System.out.println(profile.GetName() + ": Packet Received");
                             byte[] receivedData = receivedPacket.getData();
                             String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                             IPacket packet = DeserializePacket(serializedData);
                             if (packet.GetChannel().equals(channelName)) {
-                                System.out.println("correct channel");
+                                //System.out.println(profile.GetName() + ": correct channel");
                                 if (packet.GetMessage() != "ack")
                                     incomingQueue.add(packet);
 
@@ -371,6 +378,14 @@ public class UDPChannel implements ILocalChannel {
                 ackPacket.SetAckKey(packet.GetAckKey());
                 Send(profileCache.Get(packet.GetSender()), ackPacket);
             }
+        }
+
+        public synchronized boolean isConnected() {
+            return connected;
+        }
+
+        public synchronized SocketException getExceptionThrown() {
+            return exceptionThrown;
         }
     }
 

@@ -18,6 +18,13 @@ public interface IProfileCache {
      */
     void Add(IProfile[] profiles);
 
+    /**
+     * Removes IProfile in the cache with matching key.
+     *
+     * @param key  Key of profile to remove.
+     */
+    void Remove(IKey key);
+
     /** GetHybridConnection first profile of matching name
      * @param name  Name of profile to retrieve.
      * @return  IProfile of contact. Returns null if no profile can be found.

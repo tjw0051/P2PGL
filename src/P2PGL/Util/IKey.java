@@ -33,4 +33,7 @@ public interface IKey {
      */
     @Override
     boolean equals(Object key);
+
+    @Override
+    int hashCode();
 }
