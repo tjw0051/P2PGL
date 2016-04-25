@@ -43,6 +43,8 @@ public class HybridConnectionTest {
                 serverPort, serverPort+1, "channel0", "server", new Key());
         serverConnection = P2PGL.GetInstance().GetConnection(serverProfile);
 
+
+
         clientProfile = new Profile(InetAddress.getLoopbackAddress(),
                 clientPort, clientPort+1, "channel0", "client", new Key());
         clientConnection = P2PGL.GetInstance().GetConnection(clientProfile);

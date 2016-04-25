@@ -3,6 +3,7 @@ package P2PGL.UDP;
 import P2PGL.EventListener.MessageReceivedListener;
 import P2PGL.EventListener.NewContactListener;
 import P2PGL.Profile.IProfile;
+import P2PGL.Util.IKey;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -82,6 +83,11 @@ public interface ILocalChannel {
      */
     void Add(IProfile profile);
 
+    /** Remove a profile from the channel
+     * @param key key of profile to remove
+     */
+    void Remove(IKey key);
+
     /** Set the current user profile.
      * @param profile to set.
      */
@@ -114,4 +120,6 @@ public interface ILocalChannel {
      * @throws ClassNotFoundException   Class cannot be found to deserialize message.
      */
     <T> T PeekNext() throws ClassNotFoundException;
+
+    boolean isConnected();
 }

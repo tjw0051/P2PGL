@@ -11,6 +11,8 @@ import P2PGL.UDP.IPacket;
 import P2PGL.Util.IKey;
 import P2PGL.Util.ISerializedData;
 
+import java.net.InetAddress;
+
 /**
  * Factory to create objects for setting up a Kademlia DHT.
  * To create a custom factory for custom class implementations,
@@ -43,6 +45,18 @@ public interface IP2PGLFactory {
      * @return  Newly created SerializedData
      */
     ISerializedData GetSerializedData(String data, String type);
+
+    /** Create a new Profile instance
+     * @param address   Address of profile owner
+     * @param port  Port of profile owner
+     * @param localPort   UDP Port of profile owner
+     * @param localChannel    Name of UDP Channel that profile owner is a member of
+     * @param name  Name of Profile owner
+     * @param key   Key of profile owner
+     * @return new Profile instance.
+     */
+    IProfile GetProfile(InetAddress address, int port, int localPort,
+                                        String localChannel, String name, IKey key);
 
     /** Creates a new ProfileCache instance
      * @return  Newly created ProfileCache

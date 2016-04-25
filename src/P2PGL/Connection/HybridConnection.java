@@ -109,6 +109,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     //TODO: Split into start /change/join etc.
     public void JoinLocalChannel(String channelName) throws IOException{
         //Clear current contacts and incoming messages
+        //if(localChannel.isConnected())
         localChannel.Stop();
         localChannel.ClearContacts();
         localChannel.ClearQueue();
@@ -124,6 +125,8 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
             if(profile.GetLocalChannelName().equals(channelName))
                 localChannel.Add(profile);
         }
+        //if(!localChannel.isConnected())
+        while (localChannel.isConnected()) {}
         localChannel.Listen();
     }
 
@@ -184,7 +187,6 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     /** List users connected to DHT
      * @return  Keys for each user.
      */
-    //TODO: return list
     public IKey[] ListUsers() {
         return dht.ListUsers();
     }
@@ -260,7 +262,7 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     public void NewContactListener(IKey key) {
         try {
             IProfile prof = GetProfile(key);
-            if(prof != null)
+            if(prof != null && prof.GetLocalChannelName().equals(profile.GetLocalChannelName()))
                 localChannel.Add(prof);
         } catch (IOException ioe) {
         }

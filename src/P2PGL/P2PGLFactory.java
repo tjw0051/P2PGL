@@ -6,6 +6,7 @@ import P2PGL.Config.KademliaConfig;
 import P2PGL.Connection.HybridConnection;
 import P2PGL.Connection.IHybridConnection;
 import P2PGL.DHT.IDHTFacade;
+import P2PGL.Profile.Profile;
 import P2PGL.UDP.ILocalChannel;
 import P2PGL.UDP.IPacket;
 import P2PGL.UDP.UDPPacket;
@@ -20,6 +21,7 @@ import P2PGL.Util.IKey;
 import P2PGL.Util.Key;
 
 import java.io.File;
+import java.net.InetAddress;
 
 /**
  * Factory to create objects for setting up a Kademlia DHT.
@@ -61,6 +63,20 @@ public class P2PGLFactory implements IP2PGLFactory {
      */
     public ISerializedData GetSerializedData(String data, String type) {
         return new SerializedData(data, type);
+    }
+
+    /** Create a new Profile instance
+     * @param address   Address of profile owner
+     * @param port  Port of profile owner
+     * @param localPort   UDP Port of profile owner
+     * @param localChannel    Name of UDP Channel that profile owner is a member of
+     * @param name  Name of Profile owner
+     * @param key   Key of profile owner
+     * @return new Profile instance.
+     */
+    public IProfile GetProfile(InetAddress address, int port, int localPort,
+                               String localChannel, String name, IKey key) {
+        return new Profile(address, port, localPort, localChannel, name, key);
     }
 
     /** Creates a new ProfileCache instance

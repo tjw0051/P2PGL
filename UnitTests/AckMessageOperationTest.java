@@ -164,6 +164,11 @@ public class AckMessageOperationTest {
         }
 
         @Override
+        public void Remove(IKey key) {
+
+        }
+
+        @Override
         public void SetProfile(IProfile profile) {
 
         }
@@ -191,6 +196,11 @@ public class AckMessageOperationTest {
         @Override
         public <T> T PeekNext() throws ClassNotFoundException {
             return null;
+        }
+
+        @Override
+        public boolean isConnected() {
+            return false;
         }
     }
 }

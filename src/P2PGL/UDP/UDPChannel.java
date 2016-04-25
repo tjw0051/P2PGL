@@ -23,7 +23,6 @@ import java.util.*;
  */
 public class UDPChannel implements ILocalChannel {
     private int port;
-    private String channelName;
     private Queue<IPacket> incomingQueue;
     private List<MessageReceivedListener> messageReceivedListeners;
     private List<NewContactListener> newContactListeners;
@@ -33,6 +32,8 @@ public class UDPChannel implements ILocalChannel {
     private Gson gson;
     private IProfile profile;
     private Random rand;
+    protected boolean connected;
+    protected DatagramSocket socket;
 
     private Thread ackMessageOperationThread;
     private AckMessageOperation ackMessageOperation;
@@ -49,6 +50,9 @@ public class UDPChannel implements ILocalChannel {
      * @param port  Port to listen to incoming messsages
      */
     public UDPChannel(IProfile profile, int port) {
+        connected = false;
+
+
         this.profile = profile;
         this.port = port;
         messageReceivedListeners = new ArrayList<>();
@@ -74,18 +78,18 @@ public class UDPChannel implements ILocalChannel {
     /** Start listening to incoming messages
      */
     public void Listen() throws SocketException {
-        this.channelName = profile.GetLocalChannelName();
-        boolean completed;
         ListenThread listener = new ListenThread(port);
         listenThread = new Thread(listener);
         listenThread.setDaemon(true);
         listening = true;
 
         listenThread.start();
-        while(listener.isConnected() != true) {
+        while(listener != null && listener.isConnected() != true) {
             //System.out.print("N");
-            if(listener.getExceptionThrown() != null) {
-                throw listener.getExceptionThrown();
+            SocketException ex = listener.getExceptionThrown();
+            if(ex != null) {
+                listening = false;
+                throw ex;
             }
         }
         //System.out.println("listener is connected for " + profile.GetName());
@@ -151,6 +155,11 @@ public class UDPChannel implements ILocalChannel {
     public void Add(IProfile profile) {
         profileCache.Add(profile);
     }
+
+    /** Remove a profile from the channel
+     * @param key key of profile to remove
+     */
+    public void Remove(IKey key) { profileCache.Remove(key); }
 
     /**
      * Clear contacts in channel
@@ -285,9 +294,8 @@ public class UDPChannel implements ILocalChannel {
      * Listens to incoming UDP messages.
      */
     protected class ListenThread implements Runnable{
-        DatagramSocket socket;
+
         int port;
-        private boolean connected = false;
         private SocketException exceptionThrown;
 
         public ListenThread(int port) {
@@ -311,22 +319,22 @@ public class UDPChannel implements ILocalChannel {
                 DatagramPacket receivedPacket = new DatagramPacket(buffer, buffer.length);
                 while(listening) {
                     try {
-                        if(receivedPacket != null) {
+                        if(receivedPacket != null && listening) {
                             socket.receive(receivedPacket);
                             //System.out.println(profile.GetName() + ": Packet Received");
                             byte[] receivedData = receivedPacket.getData();
                             String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                             IPacket packet = DeserializePacket(serializedData);
-                            if (packet.GetChannel().equals(channelName)) {
+                            if (packet.GetChannel().equals(profile.GetLocalChannelName())) {
                                 //System.out.println(profile.GetName() + ": correct channel");
                                 if (packet.GetMessage() != "ack")
                                     incomingQueue.add(packet);
 
                             /* Listeners require extra processing so are run in a separate thread
                                 to prevent ListenThread from blocking */
-                                //new Thread(new Runnable() {
-                                    //@Override
-                                    //public void run() {
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
                                         MessageReceived(packet);
 
                                         if (!profileCache.Contains(packet.GetSender()))
@@ -343,8 +351,8 @@ public class UDPChannel implements ILocalChannel {
                                             }
 
                                         }
-                                    //}
-                                //}).start();
+                                    }
+                                }).start();
                             }
                         }
                     } catch(IOException ioe) {
@@ -353,8 +361,7 @@ public class UDPChannel implements ILocalChannel {
                     }
                 }
                 if(!listening) {
-                    socket.close();
-                    socket.disconnect();
+                    //socket.close();
                     connected = false;
                     exceptionThrown = null;
                 }
@@ -374,7 +381,7 @@ public class UDPChannel implements ILocalChannel {
             else {
                 //IPacket ackPacket = new UDPPacket("ack", "", profile.GetKey(), channelName);
                 IPacket ackPacket = P2PGL.GetInstance().GetFactory()
-                        .GetPacket("ack", "", profile.GetKey(), channelName);
+                        .GetPacket("ack", "", profile.GetKey(), profile.GetLocalChannelName());
                 ackPacket.SetAckKey(packet.GetAckKey());
                 Send(profileCache.Get(packet.GetSender()), ackPacket);
             }
@@ -393,7 +400,13 @@ public class UDPChannel implements ILocalChannel {
      * Stop listening to incoming messages
      */
     public void Stop() {
-        ackMessageOperation.Stop();
         listening = false;
+        if(socket != null)
+            socket.close();
+        ackMessageOperation.Stop();
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 }
