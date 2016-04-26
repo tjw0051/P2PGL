@@ -18,9 +18,7 @@ public interface IProfileCache {
      */
     void Add(IProfile[] profiles);
 
-    /**
-     * Removes IProfile in the cache with matching key.
-     *
+    /** Removes IProfile in the cache with matching key.
      * @param key  Key of profile to remove.
      */
     void Remove(IKey key);
@@ -48,7 +46,7 @@ public interface IProfileCache {
      */
     boolean Contains(IKey key);
 
-    /**
+    /** Clear cache
      * Clear all contacts in the cache.
      */
     void Clear();

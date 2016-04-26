@@ -86,13 +86,12 @@ public class UDPChannel implements ILocalChannel {
         listenThread.start();
         while(listener != null && listener.isConnected() != true) {
             //System.out.print("N");
-            SocketException ex = listener.getExceptionThrown();
+            SocketException ex = (SocketException)listener.getExceptionThrown();
             if(ex != null) {
                 listening = false;
                 throw ex;
             }
         }
-        //System.out.println("listener is connected for " + profile.GetName());
         //Start listening to messages, create event for receive trigger.
     }
 
@@ -211,7 +210,6 @@ public class UDPChannel implements ILocalChannel {
      */
     protected IPacket SerializeData(Object obj, Type type, IKey key, String channelName) {
         String data = gson.toJson(obj, type);
-        //IPacket packet = new UDPPacket(data, type.getTypeName(), key, channelName);
         IPacket packet = P2PGL.GetInstance().GetFactory().GetPacket(data, type.getTypeName(), key, channelName);
         return packet;
     }
@@ -296,23 +294,19 @@ public class UDPChannel implements ILocalChannel {
     protected class ListenThread implements Runnable{
 
         int port;
-        private SocketException exceptionThrown;
+        private Exception exceptionThrown;
 
         public ListenThread(int port) {
             this.port = port;
         }
 
         public void run() {
-            //System.out.println("Running listener thread");
                 try {
                     socket = new DatagramSocket(port);
                     connected = true;
-                    //System.out.println("Socket created");
                 } catch (SocketException se) {
-                    //System.out.println("Socket exception creating socket");
                     listening = false;
                     exceptionThrown = se;
-                    //TODO: Handle socket exception
                 }
 
                 byte[] buffer = new byte[10000];
@@ -321,12 +315,10 @@ public class UDPChannel implements ILocalChannel {
                     try {
                         if(receivedPacket != null && listening) {
                             socket.receive(receivedPacket);
-                            //System.out.println(profile.GetName() + ": Packet Received");
                             byte[] receivedData = receivedPacket.getData();
                             String serializedData = new String(receivedData, 0, receivedPacket.getLength());
                             IPacket packet = DeserializePacket(serializedData);
                             if (packet.GetChannel().equals(profile.GetLocalChannelName())) {
-                                //System.out.println(profile.GetName() + ": correct channel");
                                 if (packet.GetMessage() != "ack")
                                     incomingQueue.add(packet);
 
@@ -346,7 +338,7 @@ public class UDPChannel implements ILocalChannel {
                                                     ProcessAck(packet);
                                                 } catch (IOException ioe) {
                                                     System.out.println("Error processing ack");
-                                                    //TODO: handle - error sending ack
+                                                    exceptionThrown = ioe;
                                                 }
                                             }
 
@@ -356,12 +348,11 @@ public class UDPChannel implements ILocalChannel {
                             }
                         }
                     } catch(IOException ioe) {
-                        //TODO Handle - thrown at socket.receive - error receiving
+                        exceptionThrown = ioe;
                         System.out.println("Error receiving packets");
                     }
                 }
                 if(!listening) {
-                    //socket.close();
                     connected = false;
                     exceptionThrown = null;
                 }
@@ -379,7 +370,6 @@ public class UDPChannel implements ILocalChannel {
                 ackMessageOperation.AckReceived(packet.GetAckKey());
             }
             else {
-                //IPacket ackPacket = new UDPPacket("ack", "", profile.GetKey(), channelName);
                 IPacket ackPacket = P2PGL.GetInstance().GetFactory()
                         .GetPacket("ack", "", profile.GetKey(), profile.GetLocalChannelName());
                 ackPacket.SetAckKey(packet.GetAckKey());
@@ -391,7 +381,7 @@ public class UDPChannel implements ILocalChannel {
             return connected;
         }
 
-        public synchronized SocketException getExceptionThrown() {
+        public synchronized Exception getExceptionThrown() {
             return exceptionThrown;
         }
     }
@@ -406,6 +396,9 @@ public class UDPChannel implements ILocalChannel {
         ackMessageOperation.Stop();
     }
 
+    /** Channel is listening for incoming messages
+     * @return Channel is listening
+     */
     public boolean isConnected() {
         return connected;
     }

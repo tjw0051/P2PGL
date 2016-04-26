@@ -85,9 +85,22 @@ public interface IP2PGLFactory {
      */
     IAckMessageConfig GetAckConfig();
 
+    /** Returns an IPacket concretion initailised with parameters.
+     * @param message   Packet message
+     * @param type  Type of packet
+     * @param sender    Packet sender
+     * @param channel   Channel of packet sender
+     * @return  New IPacket implementation
+     */
     IPacket GetPacket(String message, String type, IKey sender, String channel);
 
+    /** Returns an IPacket concretion.
+     * @return  New IPacket implementation
+     */
     IPacket GetPacket();
 
+    /** Get Configuration for DHT
+     * @return DHT config
+     */
     KademliaConfig GetDHTConfig();
 }

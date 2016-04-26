@@ -74,6 +74,9 @@ public class Key implements IKey {
         return Arrays.equals(this.ToBytes(), ((IKey)key).ToBytes());
     }
 
+    /** Override Object hashCode() method for comparing IKey instances
+     * @return  hash code
+     */
     @Override
     public int hashCode() {
         byte hashOffset = 22;

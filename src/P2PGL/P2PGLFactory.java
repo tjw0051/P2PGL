@@ -114,14 +114,27 @@ public class P2PGLFactory implements IP2PGLFactory {
      */
     public IAckMessageConfig GetAckConfig() { return new AckMessageConfig(); }
 
+    /** Returns an IPacket concretion initailised with parameters.
+     * @param message   Packet message
+     * @param type  Type of packet
+     * @param sender    Packet sender
+     * @param channel   Channel of packet sender
+     * @return  New IPacket implementation
+     */
     public IPacket GetPacket(String message, String type, IKey sender, String channel) {
         return new UDPPacket(message, type, sender, channel);
     }
 
+    /** Returns an IPacket concretion.
+     * @return  New IPacket implementation
+     */
     public IPacket GetPacket() {
         return new UDPPacket();
     }
 
+    /** Get Configuration for DHT
+     * @return DHT config
+     */
     public KademliaConfig GetDHTConfig() {
         return new KademliaConfig(60000L, 2000L, 2000L, 10, 5, 3, 1);
     }

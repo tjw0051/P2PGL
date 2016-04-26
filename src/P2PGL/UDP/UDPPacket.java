@@ -3,7 +3,7 @@ package P2PGL.UDP;
 import P2PGL.Util.IKey;
 
 /**
- * Created by t_j_w on 21/03/2016.
+ * Packet for sending data across UDP channel
  */
 public class UDPPacket implements IPacket {
     /**

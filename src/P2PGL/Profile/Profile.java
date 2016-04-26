@@ -54,42 +54,42 @@ public class Profile implements IProfile {
         this(address, port, port+1, null, name, P2PGL.GetInstance().GetFactory().GetKey());
     }
 
-    /**
+    /** Get IP Address of profile
      * @return  IP Address of Profile owner
      */
     public InetAddress GetIPAddress() { return address; }
 
-    /**
+    /** Get DHT port of profile
      * @return  Port of profile owner.
      */
     public int GetPort() { return port; }
 
-    /**
+    /** Get local channel port of profile.
      * @return UDP Port of profile owner. Default is port + 1 unless specified.
      */
     public int GetLocalChannelPort() { return udpPort; }
 
-    /**
+    /** Get name of local channel
      * @return GetHybridConnection UDP Channel name that profile owner is a member of.
      */
     public String GetLocalChannelName() { return localChannel; }
 
-    /**
+    /** Set name of local channel
      * @param udpChannel    Set UDP Channel name.
      */
     public void SetLocalChannel(String udpChannel) { this.localChannel = udpChannel; }
 
-    /**
+    /** Get name of profile
      * @return  Name of profile owner.
      */
     public String GetName() { return name; }
 
-    /**
+    /** Get unique key of profile
      * @return  Key of profile owner.
      */
     public IKey GetKey() { return key; }
 
-    /**
+    /** Get type of this class - Needed for serialization and sending.
      * @return Type of IProfile implementation - required for serialization.
      */
     public Type GetType() { return Profile.class; }

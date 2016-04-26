@@ -296,27 +296,6 @@ public class HybridConnectionTest {
         }
         assertTrue("server profile not retrieved", serverFound);
     }
-    /*
-    @Test
-    public void testNewContactListener() throws Exception {
-
-    }
-
-    @Test
-    public void testAddMessageListener() throws Exception {
-
-    }
-
-    @Test
-    public void testRemoveMessageListener() throws Exception {
-
-    }
-
-    @Test
-    public void testMessageReceivedListener() throws Exception {
-
-    }
-    */
     @Test
     public void testGetLocalChannel() throws Exception {
         Connect(5052, 5054, true);

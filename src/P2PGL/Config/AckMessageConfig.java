@@ -1,8 +1,5 @@
 package P2PGL.Config;
 
-/**
- * Created by t_j_w on 03/04/2016.
- */
 public class AckMessageConfig implements IAckMessageConfig{
     private static final long timeout = 200L;
     private static final int resends = 3;

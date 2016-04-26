@@ -1,7 +1,7 @@
 package P2PGL.Exceptions;
 
 /**
- *
+ *  Thrown when data cannot be found on DHT.
  */
 public class ContentNotFoundException extends Exception {
         public ContentNotFoundException() {

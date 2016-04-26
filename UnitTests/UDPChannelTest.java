@@ -38,9 +38,7 @@ public class UDPChannelTest extends UDPChannel{
         String msg = "hello";
         CreateUDPChannel(6000);
         udpChannel.Listen();
-        //Thread.sleep(50);
         DatagramSocket serverSock = new DatagramSocket();
-        //serverSock.connect(InetAddress.getLoopbackAddress(), 5000);
         byte[] message = super.SerializePacket(
                 super.SerializeData(msg, String.class, new Key(), "channel")).getBytes(); //msg.getBytes();
         DatagramPacket packet = new DatagramPacket(message, message.length, InetAddress.getLoopbackAddress(), 6000);
@@ -51,7 +49,6 @@ public class UDPChannelTest extends UDPChannel{
             serverSock.send(packet);
             queueItem = udpChannel.ReadNext();
         }
-        //boolean answ = queueItem.equals(msg);
         assertTrue(queueItem.equals(msg));
     }
 
@@ -83,7 +80,6 @@ public class UDPChannelTest extends UDPChannel{
         } catch (IOException ioe) {
             fail("Error sending message");
         }
-        //Thread.sleep(50);
         String message = "";
         try {
             message = serverUDP.ReadNext();
@@ -149,30 +145,23 @@ public class UDPChannelTest extends UDPChannel{
     @Test
     public void testNewContactListener() {
         DummyListener listener = new DummyListener();
-        //System.out.println("Listener created");
         IProfile prof1 = new Profile(InetAddress.getLoopbackAddress(), 6030, 6031,
                 "channel_0", "prof1", new Key());
         IProfile prof2 = new Profile(InetAddress.getLoopbackAddress(), 6032, 6033,
                 "channel_0", "prof2", new Key());
         IProfile prof3 = new Profile(InetAddress.getLoopbackAddress(), 6034, 6035,
                 "channel_0", "prof3", new Key());
-        //System.out.println("Profiles created");
         UDPChannel channel1 = new UDPChannel(prof1);
         UDPChannel channel2 = new UDPChannel(prof2);
         UDPChannel channel3 = new UDPChannel(prof3);
-        //System.out.println("channels created");
         try {
             channel1.Listen();
-            //System.out.println("channel 1 listening");
             channel2.Listen();
-            //System.out.println("channel 2 listening");
             channel3.Listen();
-            //System.out.println("channel 3 listening");
         } catch (SocketException se) {
             fail("Socket Exception");
         }
         channel1.AddContactListener(listener);
-        //System.out.println("Contact listener added");
 
         channel2.Add(prof3);
         channel2.Add(prof1);
@@ -184,8 +173,6 @@ public class UDPChannelTest extends UDPChannel{
         long time = System.currentTimeMillis();
         while(System.currentTimeMillis() - time < 1000) {}
         try {
-            //channel2.Send(prof1, "hello", String.class);
-            //channel3.Send(prof1, "hi", String.class);
             channel2.Broadcast("Hello2", String.class);
             channel3.Broadcast("Hello3", String.class);
         } catch (IOException ioe) {

@@ -12,7 +12,7 @@ import java.net.DatagramSocket;
 import java.net.SocketException;
 
 /**
- * Created by t_j_w on 07/03/2016.
+ * Channel for local communication between peers
  */
 public interface ILocalChannel {
     /** Broadcast a message to all contacts in profile cache
@@ -121,5 +121,8 @@ public interface ILocalChannel {
      */
     <T> T PeekNext() throws ClassNotFoundException;
 
+    /** Channel is listening for incoming messages
+     * @return Channel is listening
+     */
     boolean isConnected();
 }

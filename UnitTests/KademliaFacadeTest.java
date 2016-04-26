@@ -124,17 +124,4 @@ public class KademliaFacadeTest extends KademliaFacade{
         IKey nodeId = clientKad.GetId();
         assertTrue(nodeId.toString().equals(clientKey.toString()));
     }
-    /*
-    @Test
-    public void testPadKeyShort() throws Exception {
-        String testLong = PadKey("hello");
-        assertTrue(testLong.length() <= 20);
-    }
-
-    @Test
-    public void testPadKeyLong() throws Exception {
-        String testShort = PadKey("1234567890123456789012345");
-        assertTrue(testShort.length() <= 20);
-    }
-    */
 }

@@ -1,6 +1,5 @@
 package P2PGL.Profile;
 
-import P2PGL.IP2PGLFactory;
 import P2PGL.Util.IKey;
 
 import java.util.*;
@@ -32,7 +31,6 @@ public class ProfileCache implements IProfileCache {
 
     /**
      * Add a single IProfile to the cache.
-     *
      * @param profile Profile to add.
      */
     public void Add(IProfile profile) {
@@ -41,7 +39,6 @@ public class ProfileCache implements IProfileCache {
 
     /**
      * Add an array of IProfiles to the cache.
-     *
      * @param profiles IProfiles to add to cache.
      */
     public void Add(IProfile[] profiles) {
@@ -52,7 +49,6 @@ public class ProfileCache implements IProfileCache {
 
     /**
      * Returns all IProfiles in the cache.
-     *
      * @return Collection of IProfiles.
      */
     public List<IProfile> Get() {
@@ -61,9 +57,7 @@ public class ProfileCache implements IProfileCache {
 
     /**
      * GetHybridConnection IProfile from cache by name.
-     *
      * @param name  Name of profile.
-     *
      * @return  First IProfile in cache with matching name.
      */
     public synchronized IProfile Get(String name) {
@@ -100,7 +94,6 @@ public class ProfileCache implements IProfileCache {
 
     /**
      * Removes IProfile in the cache with matching key.
-     *
      * @param key  Key of profile to remove.
      */
     public void Remove(IKey key) {
@@ -111,7 +104,7 @@ public class ProfileCache implements IProfileCache {
         }
     }
 
-    /**
+    /** Clear cache
      * Clear the cache.
      */
     public void Clear() {

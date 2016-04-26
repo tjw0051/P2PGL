@@ -1,7 +1,7 @@
 package P2PGL.Util;
 
 /**
- * Object for storing data-key pair.
+ * Struct-like class for storing serialized String data and type name pair.
  */
 public class SerializedData implements ISerializedData{
     /**
@@ -10,11 +10,11 @@ public class SerializedData implements ISerializedData{
     private String data;
     /**
      * String name of data type.
-     * @example String.class.getTypeName()
+     * Example: String.class.getTypeName()
      */
     private String type;
 
-    /**
+    /** Create a serialized data container
      * @param data  Serialized data in String format
      * @param type  String name of data type
      */
@@ -23,12 +23,12 @@ public class SerializedData implements ISerializedData{
         this.type = type;
     }
 
-    /**
+    /** Get serialized data
      * @return  Serialized data in String format.
      */
     public String GetData() { return data; }
 
-    /**
+    /** Get type of serialized data
      * @return  String name of data type
      */
     public String GetType() { return type; }

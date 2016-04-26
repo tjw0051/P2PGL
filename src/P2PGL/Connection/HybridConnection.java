@@ -24,7 +24,6 @@ import java.util.List;
 
 /**
  * A Hybrid connection utilising DHT and Local communication
- * @author Thomas Walker
  */
 public class HybridConnection implements IHybridConnection, NewContactListener, MessageReceivedListener{
     private IProfile profile;
@@ -89,7 +88,6 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
     /** Disconnect from DHT and local channel
      * @throws IOException  Error disconnecting
      */
-    //TODO: Remove profile and other pieces of player.
     public void Disconnect() throws IOException {
         if(dht.isConnected()) {
             try {
@@ -106,10 +104,8 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
      * @param channelName Name/Identifier of channel
      * @throws IOException  Cannot join local channel
      */
-    //TODO: Split into start /change/join etc.
     public void JoinLocalChannel(String channelName) throws IOException{
         //Clear current contacts and incoming messages
-        //if(localChannel.isConnected())
         localChannel.Stop();
         localChannel.ClearContacts();
         localChannel.ClearQueue();
@@ -125,7 +121,6 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
             if(profile.GetLocalChannelName().equals(channelName))
                 localChannel.Add(profile);
         }
-        //if(!localChannel.isConnected())
         while (localChannel.isConnected()) {}
         localChannel.Listen();
     }
@@ -196,7 +191,6 @@ public class HybridConnection implements IHybridConnection, NewContactListener, 
      */
     public IKey GetKey() {
         return dht.GetId();
-        //return new Key(node.getNode().getNodeId());
     }
 
     /**

@@ -1,7 +1,7 @@
 package P2PGL.Util;
 
 /**
- * Created by t_j_w on 24/03/2016.
+ * Key Object
  */
 public interface IKey {
     /** String format of Key
@@ -34,6 +34,9 @@ public interface IKey {
     @Override
     boolean equals(Object key);
 
+    /** Override Object hashCode() method for comparing IKey instances
+     * @return  hash code
+     */
     @Override
     int hashCode();
 }

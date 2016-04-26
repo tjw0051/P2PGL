@@ -20,6 +20,9 @@ public class P2PGL {
         return p2pgl;
     }
 
+    /**
+     * Factory of this P2PGL instance.
+     */
     private IP2PGLFactory factory;
 
     private P2PGL() {}

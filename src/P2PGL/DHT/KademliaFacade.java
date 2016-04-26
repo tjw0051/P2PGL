@@ -29,6 +29,9 @@ public class KademliaFacade implements IDHTFacade {
 
     public KademliaFacade() {}
 
+    /** Create a new Kademlia Instance, initialised with profile parameters
+     * @param profile   Parameters for Kademlia.
+     */
     public KademliaFacade(IProfile profile) {
         SetProfile(profile);
     }

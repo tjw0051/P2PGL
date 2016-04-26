@@ -28,6 +28,9 @@ public class AckMessageOperation implements Runnable {
 
     private boolean running;
 
+    /** Create Ack Message Operation for processing acknowledgement messages.
+     * @param localChannel  Channel to send messages on.
+     */
     public AckMessageOperation(ILocalChannel localChannel) {
         IAckMessageConfig config = P2PGL.GetInstance().GetFactory().GetAckConfig();
         this.timeout = config.GetTimeout();
@@ -48,9 +51,7 @@ public class AckMessageOperation implements Runnable {
         while(running == true && (!packets.isEmpty() || !newPackets.isEmpty())) {
             try {
                 ProcessPackets();
-            } catch (IOException ioe) {
-                //TODO: handle - error sending at udp.send
-            }
+            } catch (IOException ioe) {}
         }
         if(!running) {
             packets.clear();
@@ -139,8 +140,14 @@ public class AckMessageOperation implements Runnable {
         }
     }
 
+    /** Check if acknowledgement operation is running.
+     * @return  operation is running.
+     */
     public boolean isRunning() { return running; }
 
+    /**
+     * Stop the acknowledgement operation.
+     */
     public void Stop() { running = false; }
 
 }
